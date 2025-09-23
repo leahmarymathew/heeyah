@@ -1,17 +1,9 @@
-/* ---------- Global Base Styles ---------- */
-* { box-sizing: border-box; margin: 0; padding: 0; }
-html, body, #root { height: 100%; }
+/*
+  This is the main CSS entry point.
+  These three lines import all of Tailwind's base styles, component classes,
+  and utility classes, making them available throughout your application.
+*/
 
-body {
-  font-family: 'Poppins', sans-serif;
-  background: #f6f6f8;
-  color: #111;
-  -webkit-font-smoothing: antialiased;
-}
-
-/* Page wrapper */
-.page {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

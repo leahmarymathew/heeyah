@@ -1,3 +1,5 @@
+// This is the corrected and merged version of your app.js file.
+// It includes all features from both branches.
 
 import 'dotenv/config';
 import express from 'express';
@@ -13,8 +15,8 @@ import leaveRoutes from './routes/leaveRoutes.js';
 import attendanceRoutes from './routes/attendanceRoutes.js';
 import roomAllocRoutes from './routes/roomAllocRoutes.js';
 import caretakerRoutes from './routes/caretakerRoutes.js';
-import hostelRoutes from './routes/hostelRoutes.js';         // <-- NEW
-import reportsRoutes from './routes/reportsRoutes.js';       // <-- NEW
+import hostelRoutes from './routes/hostelRoutes.js';
+import reportsRoutes from './routes/reportsRoutes.js';
 
 const app = express();
 
@@ -37,8 +39,7 @@ app.use('/api/leave', leaveRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/allocate', roomAllocRoutes);
 app.use('/api/caretakers', caretakerRoutes);
-app.use('/api/hostels', hostelRoutes);       // <-- NEW
-
-app.use('/api/reports', reportsRoutes);     // <-- NEW
+app.use('/api/hostels', hostelRoutes);
+app.use('/api/reports', reportsRoutes);
 
 export default app;
