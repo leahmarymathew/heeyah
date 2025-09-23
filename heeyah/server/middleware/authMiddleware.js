@@ -1,31 +1,28 @@
 // server/middleware/authMiddleware.js
 
-import supabase from '../config/supabaseClient.js';
-import { findUserProfile } from '../controllers/authController.js';
+import jwt from 'jsonwebtoken';
 
-// Middleware to check for a valid JWT from the Authorization header
-export const protect = async (req, res, next) => {
-  const token = req.headers.authorization?.split(' ')[1];
-  if (!token) return res.status(401).json({ error: 'Not authorized, no token' });
+// Validate JWT from Authorization header
+export const protect = (req, res, next) => {
+    const token = req.headers.authorization?.split(' ')[1];
 
-  const { data: { user }, error } = await supabase.auth.getUser(token);
-  if (error || !user) return res.status(401).json({ error: 'Not authorized, token failed' });
+    if (!token) {
+        return res.status(401).json({ error: 'Not authorized, no token.' });
+    }
 
-  req.user = user; // Attach basic auth user to the request
-  next();
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        req.user = decoded; // { userId, role }
+        next();
+    } catch (error) {
+        res.status(401).json({ error: 'Not authorized, token failed.' });
+    }
 };
 
-// Middleware to check if the authenticated user has an allowed role
-export const checkRole = (allowedRoles) => async (req, res, next) => {
-  if (!req.user) return res.status(401).json({ error: 'Not authorized, user not found' });
- 
-  const userProfile = await findUserProfile(req.user.id);
-  if (!userProfile?.role) return res.status(403).json({ error: 'Forbidden: Could not verify user role.' });
-
-  if (!allowedRoles.includes(userProfile.role)) {
-    return res.status(403).json({ error: `Forbidden: Access restricted to ${allowedRoles.join(', ')}.` });
-  }
- 
-  req.profile = userProfile; // Attach the full user profile to the request
-  next();
+// Require one of the allowed roles
+export const checkRole = (allowedRoles) => (req, res, next) => {
+    if (!req.user || !allowedRoles.includes(req.user.role)) {
+        return res.status(403).json({ error: 'Forbidden: You do not have the required permissions.' });
+    }
+    next();
 };

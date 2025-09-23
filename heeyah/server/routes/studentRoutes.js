@@ -6,8 +6,7 @@ import { protect, checkRole } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// Route to register a new student, protected for wardens or admins
-router.post('/register', protect, checkRole(['warden', 'admin']), registerStudent);
+
 
 // Route to get a specific student's room allocation details
 router.get('/:roll_no/allocation', protect, checkRole(['student', 'warden', 'admin']), getStudentAllocation);

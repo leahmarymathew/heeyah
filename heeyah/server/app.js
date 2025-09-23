@@ -1,6 +1,3 @@
-// This is the corrected and merged version of your app.js file.
-// It includes all features from both branches.
-
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';

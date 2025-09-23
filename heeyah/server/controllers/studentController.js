@@ -1,31 +1,33 @@
 
 import supabase from '../config/supabaseClient.js';
-import { v4 as uuidv4 } from 'uuid'; // To generate unique IDs
+import { v4 as uuidv4 } from 'uuid';
 
-// @desc    Register a new student (and their guardian)
-// @route   POST /api/students/register
-// @access  Warden
 export const registerStudent = async (req, res) => {
-  const { 
-    email, password, fullName, address, phoneNo, gender,
-    guardianName, guardianRelation, guardianPhone 
-  } = req.body;
-  
-  const { data: authData, error: authError } = await supabase.auth.signUp({ email, password });
-  if (authError) return res.status(400).json({ error: authError.message });
-  if (!authData.user) return res.status(400).json({ error: "Auth user creation failed." });
+    const { email, password, fullName, ...rest } = req.body;
 
-  const guardian_id = `GUA-${uuidv4().slice(0, 6).toUpperCase()}`;
-  const { error: guardianError } = await supabase.from('GUARDIAN').insert({
-      guardian_id, guardian_name: guardianName, guardian_relation: guardianRelation, guardian_phone: guardianPhone
-  });
-  if (guardianError) return res.status(400).json({ error: `Guardian creation failed: ${guardianError.message}` });
+    // 1. Create the user in your 'users' table with the plain text password
+    const user_id = `USER-${uuidv4().slice(0, 8).toUpperCase()}`;
+    const { error: userError } = await supabase.from('users').insert({
+        user_id,
+        email,
+        password: password, // Storing password directly
+        role: 'student'
+    });
 
-  const roll_no = `STU-${uuidv4().slice(0, 6).toUpperCase()}`;
-  const { data: studentData, error: studentError } = await supabase.from('STUDENT').insert({
-      roll_no, name: fullName, address, phone_no: phoneNo, gender, guardian_id, user_id: authData.user.id
-  }).select();
-  if (studentError) return res.status(400).json({ error: `Student creation failed: ${studentError.message}` });
+    if (userError) return res.status(400).json({ error: `User creation failed: ${userError.message}` });
 
-  res.status(201).json({ message: 'Student registered successfully', student: studentData[0] });
+    // 2. Create the guardian and student profiles (same as before)
+    const guardian_id = `GUA-${uuidv4().slice(0, 6).toUpperCase()}`;
+    const { error: guardianError } = await supabase.from('GUARDIAN').insert({
+        guardian_id, guardian_name: rest.guardianName, guardian_relation: rest.guardianRelation, guardian_phone: rest.guardianPhone
+    });
+    if (guardianError) return res.status(400).json({ error: `Guardian creation failed: ${guardianError.message}` });
+
+    const roll_no = `STU-${uuidv4().slice(0, 6).toUpperCase()}`;
+    const { data: studentData, error: studentError } = await supabase.from('STUDENT').insert({
+        roll_no, name: fullName, address: rest.address, phone_no: rest.phoneNo, gender: rest.gender, guardian_id, user_id
+    }).select();
+    if (studentError) return res.status(400).json({ error: `Student creation failed: ${studentError.message}` });
+
+    res.status(201).json({ message: 'Student registered successfully', student: studentData[0] });
 };
