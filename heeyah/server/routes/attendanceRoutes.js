@@ -1,6 +1,7 @@
 import express from 'express';
 import { protect, checkRole } from '../middleware/authMiddleware.js';
-import { markAttendance, getAttendance } from '../controller/attendanceController.js';
+// Corrected the controller path from 'controller' to 'controllers'
+import { markAttendance, getAttendance } from '../controllers/attendanceController.js';
 
 const router = express.Router();
 

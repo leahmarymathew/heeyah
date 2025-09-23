@@ -1,5 +1,6 @@
 import express from 'express';
-import { loginUser } from '../controller/authController.js';
+// Corrected the controller path from 'controller' to 'controllers'
+import { loginUser } from '../controllers/authController.js';
 
 const router = express.Router();
 
