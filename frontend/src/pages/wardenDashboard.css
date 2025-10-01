@@ -1,0 +1,65 @@
+.stdReport {
+  /* Improved gradient and card appearance */
+  background: linear-gradient(135deg, #7b61ff 0%, #9747ff 100%);
+  border-radius: 12px;
+  padding: 30px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15); /* Stronger shadow */
+  margin-top: 20px;
+  margin-left: 60px;
+  width: 450px; /* Adjusted width */
+  /* Removed fixed height */
+  box-sizing: border-box;
+}
+h2 {
+  color: white;
+  font-size: 30px; /* Reduced for better balance */
+  margin-top: 0;
+  margin-bottom: 15px;
+  font-weight: 700;
+}
+
+/* List Styling */
+.stdReport ul {
+  list-style: none;
+  padding: 0;
+  margin-bottom: 20px;
+}
+
+.stdReport ul li {
+  color: rgba(255, 255, 255, 0.9); /* Lighten text slightly */
+  font-size: 16px;
+  line-height: 1.6;
+  margin-bottom: 5px;
+  padding-left: 15px;
+  position: relative;
+}
+
+/* Custom bullet point */
+.stdReport ul li::before {
+  content: "•";
+  color: white;
+  font-weight: bold;
+  display: inline-block;
+  width: 1em;
+  margin-left: -1em;
+}
+
+/* Button Styling: High-contrast white button */
+.btnInsights {
+  background-color: #ffffff;
+  color: #7b61ff; /* Use the primary purple color for text */
+  border: none;
+  padding: 12px 25px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-top: 15px;
+  transition: all 0.3s ease;
+}
+
+.btnInsights:hover {
+  background-color: #f0f0f0;
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
+}
