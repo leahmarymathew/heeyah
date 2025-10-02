@@ -1,9 +1,0 @@
-/*
-  This is the main CSS entry point.
-  These three lines import all of Tailwind's base styles, component classes,
-  and utility classes, making them available throughout your application.
-*/
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;

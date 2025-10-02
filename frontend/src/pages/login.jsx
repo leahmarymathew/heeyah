@@ -1,14 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { AuthContext } from '../context/AuthContext';
 
-// CSS styles are embedded here to avoid import errors
+// Import your local images from the assets folder
+import loginIllustration from '../assets/login-illustration.png';
+import heeyahLogo from '../assets/heeyah-logo.png';
+
+// Your embedded CSS styles remain the same, but we will remove the background-image rule.
 const LoginPageStyles = () => (
   <style>{`
     @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap');
 
     .login-page-container {
       display: flex;
-      min-height: 80vh;
+      min-height: 100vh;
       width: 100%;
       font-family: 'Open Sans', sans-serif;
       background-color: #fff;
@@ -27,12 +33,11 @@ const LoginPageStyles = () => (
 
     .login-main-content {
       width: 100%;
-      max-width: 400px; /* Limits the width of the form area */
-      margin: auto 0; /* Vertically centers the form in the available space */
+      max-width: 400px;
+      margin: auto 0;
     }
 
     .login-main-content h1 {
-      /* Hostel Management title styles as requested */
       color: #3751FE;
       font-size: 36px;
       font-family: 'Open Sans', sans-serif;
@@ -42,7 +47,7 @@ const LoginPageStyles = () => (
     }
     
     .login-main-content .welcome-text {
-      color: #6c757d; /* A softer gray for the subtitle */
+      color: #6c757d;
       font-size: 16px;
       margin-top: 12px;
       margin-bottom: 40px;
@@ -66,7 +71,7 @@ const LoginPageStyles = () => (
       font-size: 16px;
       border: 1px solid #ced4da;
       border-radius: 8px;
-      box-sizing: border-box; /* Important for padding and width to work together */
+      box-sizing: border-box;
       transition: border-color 0.2s, box-shadow 0.2s;
     }
 
@@ -108,10 +113,16 @@ const LoginPageStyles = () => (
       cursor: pointer;
       margin-top: 24px;
       transition: background-color 0.3s;
+      opacity: 1;
+    }
+    
+    .login-button:disabled {
+        background-color: #aeb8fe;
+        cursor: not-allowed;
     }
 
-    .login-button:hover {
-      background-color: #2a41d6; /* A slightly darker blue */
+    .login-button:hover:not(:disabled) {
+      background-color: #2a41d6;
     }
 
     .login-image-container {
@@ -119,25 +130,19 @@ const LoginPageStyles = () => (
       display: flex;
       align-items: center;
       justify-content: center;
-      background-color: #f8f9fa; /* Light gray placeholder background */
+      background-color: #f8f9fa;
       padding: 40px;
     }
     
-    /* This is a placeholder for your image */
-    .image-placeholder {
+    .login-image-container img {
         width: 100%;
-        height: 100%;
+        height: auto;
         max-width: 600px;
-        background-image: url('https://storage.googleapis.com/upload/prod/2282245_2024-09-08_15-46-24_image_475ef1.png');
-        background-size: contain;
-        background-repeat: no-repeat;
-        background-position: center;
     }
 
-    /* Responsive adjustments */
     @media (max-width: 992px) {
       .login-image-container {
-        display: none; /* Hide the image on smaller screens */
+        display: none;
       }
       .login-content-wrapper {
         padding: 40px 30px;
@@ -149,53 +154,60 @@ const LoginPageStyles = () => (
       font-size: 14px;
       text-align: center;
     }
-
   `}</style>
 );
-
-// Regex for student roll number: 4-digit year (2022-2025) + Course Code (BEC/BCS/BCD/BCY/CS/CD/CY) + 4-digit number.
-const studentRollNumberRegex = /^202[2-5](BEC|BCS|BCD|BCY|CS|CD|CY)\d{4}$/i;
 
 export default function LoginPage() {
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  
   const navigate = useNavigate();
+  const { login } = useContext(AuthContext);
 
-  const handleLogin = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(''); // Clear previous errors
-    
-    const input = identifier.trim();
+    setError('');
+    setLoading(true);
 
-    // 1. Warden Login Check: email ending with @iiitkottayam.ac.in
-    if (input.toLowerCase().endsWith('@iiitkottayam.ac.in')) {
-      // In a real app, you'd check password here. Assuming success for demo.
-      navigate('/warden-dashboard');
-      return;
+    try {
+      const response = await axios.post('http://localhost:3001/api/auth/login', {
+        email: identifier,
+        password: password,
+      });
+
+      const { token, user } = response.data;
+      login(token, user);
+
+      if (user.role === 'student') {
+        navigate('/attendance');
+      } else if (user.role === 'warden') {
+        navigate('/warden-dashboard');
+      } else {
+        navigate('/dashboard');
+      }
+
+    } catch (err) {
+      console.error('Login failed:', err);
+      setError(err.response?.data?.error || 'Login failed. Please check your credentials.');
+    } finally {
+      setLoading(false);
     }
-
-    // 2. Student Login Check: roll number pattern
-    if (studentRollNumberRegex.test(input)) {
-        // In a real app, you'd check password here. Assuming success for demo.
-        navigate('/student-dashboard');
-        return;
-    }
-
-    // 3. Invalid credentials
-    setError('Invalid Roll Number/Email or Password. Please check your credentials.');
   };
 
   return (
     <>
       <LoginPageStyles />
       <div className="login-page-container">
-        {/* Left Side: Content and Form */}
         <div className="login-content-wrapper">
+          <header className="login-header">
+            <img src={heeyahLogo} alt="Heeyah Logo" style={{ height: '40px' }} />
+          </header>
           <main className="login-main-content">
             <h1>Hostel Management</h1>
             <p className="welcome-text">Welcome back! Please login to your account.</p>
-            <form className="login-form" onSubmit={handleLogin}>
+            <form className="login-form" onSubmit={handleSubmit}>
               <div className="form-group">
                 <label htmlFor="identifier">Roll Number or Email</label>
                 <input 
@@ -222,21 +234,22 @@ export default function LoginPage() {
               </div>
               <div className="form-options">
                 <div className="remember-me">
-                    <input type="checkbox" id="remember" name="remember" />
-                    <label htmlFor="remember" style={{ marginBottom: 0, fontWeight: 'normal' }}>Remember Me</label>
+                  <input type="checkbox" id="remember" name="remember" />
+                  <label htmlFor="remember" style={{ marginBottom: 0, fontWeight: 'normal' }}>Remember Me</label>
                 </div>
               </div>
-              <button type="submit" className="login-button">Login</button>
+              <button type="submit" className="login-button" disabled={loading}>
+                {loading ? 'Logging in...' : 'Login'}
+              </button>
               {error && <p className="error-message">{error}</p>}
             </form>
           </main>
         </div>
-        {/* Right Side: Image Placeholder */}
         <div className="login-image-container">
-            <div className="image-placeholder">
-            </div>
+          <img src={loginIllustration} alt="Hostel management illustration" />
         </div>
       </div>
     </>
   );
 }
+

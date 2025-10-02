@@ -1,0 +1,50 @@
+/*Navbar.css */
+
+nav {
+    height: 10%;
+    width: 100%;
+    padding: 0 2.5rem;
+    background-color: #F5F7FF;
+    color: #000;
+    font-family: 'Roboto', sans-serif;
+    font-size: 1rem;
+    font-weight: 400;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.nav-logo {
+    width: 5rem;
+    height: auto;
+}
+
+.logo-image {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.nav-links {
+    display: flex;
+    list-style: none;
+    gap: 3rem;
+}
+
+.nav-links a {
+    color: #000;
+}
+
+.nav-links .current {
+    color: #3751FE;
+}
+
+.nav-user {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.user-name {
+    font-weight: 700;
+}
