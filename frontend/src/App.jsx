@@ -3,6 +3,7 @@ import { Routes, Route, Outlet } from 'react-router-dom';
 import Header from './components/header'
 import Login from "./pages/login";
 import WardenDashboard from "./pages/wardenDashboard";
+import RoomAllocation from './pages/roomAllocation'
 import './App.css'
 
 // Define Navigation Link Sets based on user roles
@@ -45,7 +46,9 @@ const StudentLayout = () => (
 const WardenLayout = () => (
     <>
         <Header navLinks={WARDEN_NAV_LINKS} />
-        <Outlet /> {/* Renders the nested warden routes here */}
+        <div className="main-content-wrapper"> 
+            <Outlet /> {/* Renders the nested warden routes here, including RoomAllocation */}
+        </div>
     </>
 );
 
@@ -69,7 +72,7 @@ function App() {
         {/* WardenDashboard is the primary page showing student reports */}
         <Route path="/warden-dashboard" element={<WardenDashboard />} />
         <Route path="/warden/wardens" element={<WardensPage />} />
-        <Route path="/warden/room-management" element={<RoomManagementPage />} />
+        <Route path="/warden/room-management" element={<RoomAllocation />} />
       </Route>
     </Routes>
   )

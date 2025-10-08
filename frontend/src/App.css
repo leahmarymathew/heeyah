@@ -1,0 +1,7 @@
+/* src/App.css */
+/* Remove padding-top here */
+.main-content-wrapper {
+    padding-top: 0px; /* <--- CHANGED FROM 60px TO 0px */
+    padding-left: 60px; 
+    padding-right: 60px;
+}
