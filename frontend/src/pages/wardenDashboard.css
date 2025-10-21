@@ -1,3 +1,4 @@
+/* src/pages/wardenDashboard.css */
 .stdReport {
   /* Improved gradient and card appearance */
   background: linear-gradient(135deg, #7b61ff 0%, #9747ff 100%);
@@ -5,7 +6,7 @@
   padding: 30px;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15); /* Stronger shadow */
   margin-top: 20px;
-  margin-left: 60px;
+  /* CORRECTION: Removed margin-left: 60px; to avoid double padding from .main-content-wrapper */
   width: 450px; /* Adjusted width */
   /* Removed fixed height */
   box-sizing: border-box;
