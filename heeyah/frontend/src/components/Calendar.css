@@ -86,3 +86,41 @@
 .calendar-day.empty { 
     cursor: default; 
 }
+
+.calendar-footer {
+  display: flex;
+  justify-content: flex-end; /* Align buttons to the right */
+  gap: 10px; /* Space between buttons */
+  padding: 10px 10px 0; /* Add some padding above */
+  border-top: 1px solid #eee; /* Separator line */
+  margin-top: 10px;
+}
+
+.calendar-button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s, box-shadow 0.2s;
+}
+
+.calendar-button.confirm {
+  background-color: #3b82f6; /* Blue */
+  color: white;
+}
+
+.calendar-button.confirm:hover {
+  background-color: #2563eb;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+.calendar-button.cancel {
+  background-color: #f3f4f6; /* Light Gray */
+  color: #374151;
+}
+
+.calendar-button.cancel:hover {
+  background-color: #e5e7eb;
+}

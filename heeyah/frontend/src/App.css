@@ -1,9 +1,19 @@
-/*
-  This is the main CSS entry point.
-  These three lines import all of Tailwind's base styles, component classes,
-  and utility classes, making them available throughout your application.
-*/
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  width: 100%;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+}

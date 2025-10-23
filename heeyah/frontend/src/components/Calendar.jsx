@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import './Calendar.css';
 
-const SimpleCalendar = ({ selectedDate, onChange }) => {
+const SimpleCalendar = ({ selectedDate, onChange, onClose }) => {
+    // --- 1. Internal state to track the current selection ---
+    // This allows the user to click around without affecting the parent state.
+    const [currentSelection, setCurrentSelection] = useState(selectedDate || new Date());
     const [viewDate, setViewDate] = useState(selectedDate || new Date());
 
     const daysOfWeek = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
@@ -26,7 +29,8 @@ const SimpleCalendar = ({ selectedDate, onChange }) => {
     // Add the actual days of the month
     for (let day = 1; day <= daysInMonth; day++) {
         const date = new Date(year, month, day);
-        const isSelected = selectedDate && date.toDateString() === selectedDate.toDateString();
+        // --- 2. Styling is now based on the internal 'currentSelection' state ---
+        const isSelected = currentSelection && date.toDateString() === currentSelection.toDateString();
         const isToday = new Date().toDateString() === date.toDateString();
 
         let dayClassName = "calendar-day";
@@ -34,7 +38,8 @@ const SimpleCalendar = ({ selectedDate, onChange }) => {
         if (isToday) dayClassName += " today";
 
         calendarDays.push(
-            <div key={day} className={dayClassName} onClick={() => onChange(date)}>
+            // --- 3. Clicking a day only updates the internal state ---
+            <div key={day} className={dayClassName} onClick={() => setCurrentSelection(date)}>
                 {day}
             </div>
         );
@@ -46,6 +51,12 @@ const SimpleCalendar = ({ selectedDate, onChange }) => {
 
     const handleNextMonth = () => {
         setViewDate(new Date(year, month + 1, 1));
+    };
+
+    // --- 4. Handler for the "Done" button ---
+    // This function calls the parent's onChange with the chosen date.
+    const handleConfirmSelection = () => {
+        onChange(currentSelection);
     };
 
     return (
@@ -62,6 +73,16 @@ const SimpleCalendar = ({ selectedDate, onChange }) => {
             </div>
             <div className="calendar-grid">
                 {calendarDays}
+            </div>
+
+            {/* --- 5. Footer with "Cancel" and "Done" buttons --- */}
+            <div className="calendar-footer">
+                <button className="calendar-button cancel" onClick={onClose}>
+                    Cancel
+                </button>
+                <button className="calendar-button confirm" onClick={handleConfirmSelection}>
+                    Done
+                </button>
             </div>
         </div>
     );

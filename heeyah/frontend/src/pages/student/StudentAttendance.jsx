@@ -1,13 +1,10 @@
 import React, { useEffect, useState, useRef, useLayoutEffect, useCallback } from 'react';
-import SimpleCalendar from '../components/Calendar';
-import Navbar from '../components/Navbar';
+import SimpleCalendar from '../../components/Calendar';
+import Navbar from '../../components/Navbar';
 import './StudentAttendance.css';
 
-// Define the base URL for your backend API.
-// For production, this should come from an environment variable (e.g., process.env.REACT_APP_API_URL).
 const API_BASE_URL = 'http://localhost:5000';
 
-// Main App Component
 export default function StudentAttendance() {
     // --- STATE MANAGEMENT ---
     const today = new Date();

@@ -1,0 +1,109 @@
+* {
+    margin: 0; 
+    padding: 0; 
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+body { 
+    background-color: #fff; 
+    overflow: hidden; 
+    color: black;
+}
+
+.main {
+    display: flex; 
+    position: relative;
+    flex-direction: column;
+    align-items: center; 
+    height: 100vh;
+}
+
+.image-button {
+  position: absolute; 
+  top: 15px;          
+  left: 30px;         
+  z-index: 10;        
+  background: none;
+  border: none;
+  padding: 5px;
+  cursor: pointer;
+  border-radius: 50%; 
+  transition: background-color 0.2s;
+}
+
+.image-button:hover {
+  opacity: 0.8; 
+}
+
+.warden-leave-container {
+    width: 80%;
+    margin-top: 2rem;
+    padding: 1rem;
+}
+
+.head {
+    font-size: 1.25rem;
+    font-weight: 500;
+}
+
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 1rem;
+    margin-top: 1rem;
+}
+
+th {
+    padding: 0.5rem;
+    border-bottom: 2px solid #000;
+    text-align: left;
+}
+
+td{
+    padding: 0.25rem;
+}
+
+.applicant {
+    width: 30%;
+}
+
+.details {
+    width: 50%;
+    font-size: small;
+}
+
+.actions {
+    width: 20%;
+    gap: 1.5rem;
+}
+
+.approve-button, .reject-button {
+    padding: 0.5rem 1rem;
+    margin-right: 0.5rem;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    color: #fff;
+}
+
+.approve-button {
+    background-color: #4CAF50; 
+}
+
+.reject-button {
+    background-color: #f44336; 
+}
+
+.status-approved {
+    text-align: center;
+    color: green;
+}
+.status-rejected {
+    text-align: center;
+    color: red;
+}
+
+.heading {
+    font-size: 1rem;
+}
