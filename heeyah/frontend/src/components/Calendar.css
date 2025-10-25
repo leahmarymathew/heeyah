@@ -1,15 +1,13 @@
 /* --- CALENDAR COMPONENT STYLES --- */
 .simple-calendar-container {
-    position: absolute; 
-    top: 60px; 
-    right: 0;
-    z-index: 100; 
+    position: static; /* ✅ remove absolute positioning */
     background: #ffffff; 
     border-radius: 16px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
     border: 1px solid #e9ecef;
-    padding: 1rem; 
+    padding: 1rem;
     width: 320px;
+    margin: 0 auto; /* ✅ center inside modal */
 }
 
 .calendar-header {
@@ -123,4 +121,15 @@
 
 .calendar-button.cancel:hover {
   background-color: #e5e7eb;
+}
+
+.calendar-day.past {
+  color: #d1d5db; /* Light gray text */
+  cursor: not-allowed; /* Show disabled cursor */
+}
+
+/* Make sure hover effects don't apply to past dates */
+.calendar-day.past:hover {
+  background-color: #f9fafb; /* Keep the same background */
+  border-color: transparent; /* No hover border */
 }

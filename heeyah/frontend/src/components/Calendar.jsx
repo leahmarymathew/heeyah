@@ -1,11 +1,19 @@
 import React, { useState } from 'react';
 import './Calendar.css';
 
-const SimpleCalendar = ({ selectedDate, onChange, onClose }) => {
-    // --- 1. Internal state to track the current selection ---
-    // This allows the user to click around without affecting the parent state.
+// --- 1. minDate is still a prop ---
+const SimpleCalendar = ({ selectedDate, onChange, onClose, minDate }) => {
     const [currentSelection, setCurrentSelection] = useState(selectedDate || new Date());
     const [viewDate, setViewDate] = useState(selectedDate || new Date());
+
+    // --- 2. UPDATED LOGIC ---
+    // If minDate is passed, create a date from it. If not, set it to null.
+    const minSelectableDate = minDate ? new Date(minDate) : null;
+    
+    // Set time to midnight *only if* minSelectableDate is not null
+    if (minSelectableDate) {
+        minSelectableDate.setHours(0, 0, 0, 0);
+    }
 
     const daysOfWeek = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
     const monthNames = [
@@ -22,24 +30,30 @@ const SimpleCalendar = ({ selectedDate, onChange, onClose }) => {
     const startDayOfWeek = firstDayOfMonth.getDay();
 
     const calendarDays = [];
-    // Add empty divs for days before the 1st of the month
     for (let i = 0; i < startDayOfWeek; i++) {
         calendarDays.push(<div key={`empty-${i}`} className="calendar-day empty"></div>);
     }
-    // Add the actual days of the month
+    
     for (let day = 1; day <= daysInMonth; day++) {
         const date = new Date(year, month, day);
-        // --- 2. Styling is now based on the internal 'currentSelection' state ---
         const isSelected = currentSelection && date.toDateString() === currentSelection.toDateString();
         const isToday = new Date().toDateString() === date.toDateString();
+
+        // --- 3. UPDATED LOGIC ---
+        // A date is "past" *only if* minSelectableDate exists AND the date is before it.
+        const isPastDate = minSelectableDate && (date < minSelectableDate);
 
         let dayClassName = "calendar-day";
         if (isSelected) dayClassName += " selected";
         if (isToday) dayClassName += " today";
+        if (isPastDate) dayClassName += " past";
 
         calendarDays.push(
-            // --- 3. Clicking a day only updates the internal state ---
-            <div key={day} className={dayClassName} onClick={() => setCurrentSelection(date)}>
+            <div 
+                key={day} 
+                className={dayClassName} 
+                onClick={() => isPastDate ? null : setCurrentSelection(date)}
+            >
                 {day}
             </div>
         );
@@ -53,8 +67,6 @@ const SimpleCalendar = ({ selectedDate, onChange, onClose }) => {
         setViewDate(new Date(year, month + 1, 1));
     };
 
-    // --- 4. Handler for the "Done" button ---
-    // This function calls the parent's onChange with the chosen date.
     const handleConfirmSelection = () => {
         onChange(currentSelection);
     };
@@ -75,7 +87,6 @@ const SimpleCalendar = ({ selectedDate, onChange, onClose }) => {
                 {calendarDays}
             </div>
 
-            {/* --- 5. Footer with "Cancel" and "Done" buttons --- */}
             <div className="calendar-footer">
                 <button className="calendar-button cancel" onClick={onClose}>
                     Cancel
@@ -89,3 +100,4 @@ const SimpleCalendar = ({ selectedDate, onChange, onClose }) => {
 };
 
 export default SimpleCalendar;
+

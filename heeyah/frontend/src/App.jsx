@@ -8,13 +8,13 @@ import './App.css';
 import WardenLeave from './pages/warden/WardenLeave';
 import WardenAttendance from './pages/warden/WardenAttendance';
 import WardenComplaint from './pages/warden/WardenComplaint';
-
+import StudentLeave from './pages/student/StudentLeave';
 
 function App() {
   return (    
     <BrowserRouter>
       <Routes>
-          <Route path="/" element={<WardenLeave />} />
+          <Route path="/" element={<StudentLeave />} />
       </Routes>
     </BrowserRouter>
   );
