@@ -8,11 +8,12 @@ import Dashboard from './pages/Dashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import LostAndFound from './pages/LostAndFound';
 import Complaint from './pages/Complaint';
-import StudentAttendance from './pages/StudentAttendance';
+import StudentAttendance from './pages/student/StudentAttendance';
 import AppLayout from './components/AppLayout.jsx';
 import WardenLeave from './pages/warden/WardenLeave';
 import WardenAttendance from './pages/warden/WardenAttendance';
 import WardenComplaint from './pages/warden/WardenComplaint'
+import StudentLeave from './pages/student/StudentLeave.jsx';
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
         <Route path="/complaint" element={<Complaint />} />
         <Route path="/lost-and-found" element={<LostAndFound />} />
         <Route path="/attendance" element={<StudentAttendance />} /> 
+        <Route path="/student/leave-form" element={<StudentLeave />} />
         <Route path="/warden-attendence" element={<WardenAttendance />} /> 
         <Route path="/warden-complaint" element={<WardenComplaint/>} /> 
         <Route path="/warden-leave" element={<WardenLeave/>} /> 

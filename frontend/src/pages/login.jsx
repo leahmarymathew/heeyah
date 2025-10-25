@@ -188,9 +188,14 @@ export default function LoginPage() {
       // will automatically update the global user state. 
       // We call login here just in case immediate state update is needed, though it might be redundant.
       if (data.session && data.user) {
-         login(data.session.access_token, data.user); 
+        const token = data.session.access_token;
+
+        // Save in localStorage so that other pages can read it
+        localStorage.setItem('authToken', token);
+
+        // Update context as before
+        login(token, data.user);
       }
-       
       // --- Navigation ---
       // Navigate to the main dashboard after Supabase confirms login. 
       // The dashboard or layout components should handle role-specific UI.
