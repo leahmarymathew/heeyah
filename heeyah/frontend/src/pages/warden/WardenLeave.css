@@ -7,8 +7,8 @@
 
 body { 
     background-color: #fff; 
-    overflow: hidden; 
     color: black;
+    overflow-y: scroll;
 }
 
 .main {
@@ -16,7 +16,8 @@ body {
     position: relative;
     flex-direction: column;
     align-items: center; 
-    height: 100vh;
+    min-height: 100vh;
+    padding-bottom: 3rem;
 }
 
 .image-button {
@@ -37,7 +38,7 @@ body {
 }
 
 .warden-leave-container {
-    width: 80%;
+    width: 75%;
     margin-top: 2rem;
     padding: 1rem;
 }
@@ -61,19 +62,24 @@ th {
 }
 
 td{
-    padding: 0.25rem;
+    padding: 0.25rem;    
 }
 
 .applicant {
-    width: 30%;
+    width: 40%;
 }
 
-.details {
-    width: 50%;
-    font-size: small;
+.details1 {
+    width: 60%;
 }
 
-.actions {
+.applicant, .details1 {
+    vertical-align: top;
+    font-size: 1rem;
+    padding-left: 1.25rem;
+}
+
+/* .actions {
     width: 20%;
     gap: 1.5rem;
 }
@@ -106,4 +112,4 @@ td{
 
 .heading {
     font-size: 1rem;
-}
+} */

@@ -14,7 +14,7 @@ function App() {
   return (    
     <BrowserRouter>
       <Routes>
-          <Route path="/" element={<WardenAttendance />} />
+          <Route path="/" element={<WardenLeave />} />
       </Routes>
     </BrowserRouter>
   );
