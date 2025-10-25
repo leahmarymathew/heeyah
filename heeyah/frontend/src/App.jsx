@@ -9,12 +9,13 @@ import WardenLeave from './pages/warden/WardenLeave';
 import WardenAttendance from './pages/warden/WardenAttendance';
 import WardenComplaint from './pages/warden/WardenComplaint';
 import StudentLeave from './pages/student/StudentLeave';
+import StudentLostFoundMessages from './pages/student/StudentLostFoundMessages';
 
 function App() {
   return (    
     <BrowserRouter>
       <Routes>
-          <Route path="/" element={<WardenLeave />} />
+          <Route path="/" element={<StudentLostFoundMessages />} />
       </Routes>
     </BrowserRouter>
   );
