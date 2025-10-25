@@ -28,7 +28,7 @@ function WardenLeave() {
             totalDays: 4,
             workingDays: 2,
         },
-        status: 'pending',
+        status: 'ontime',
     },
     {
         id: 2,
@@ -80,7 +80,7 @@ function WardenLeave() {
             totalDays: 1,
             workingDays: 1,
         },
-        status: 'pending',
+        status: 'ontime',
     },
      {
         id: 5,
@@ -106,7 +106,7 @@ function WardenLeave() {
             totalDays: 3,
             workingDays: 2,
         },
-        status: 'rejected',
+        status: 'ontime',
     },
     {
         id: 6,
@@ -132,7 +132,7 @@ function WardenLeave() {
             totalDays: 3,
             workingDays: 2,
         },
-        status: 'rejected',
+        status: 'late',
     },
     {
         id: 7,
@@ -158,7 +158,7 @@ function WardenLeave() {
             totalDays: 4,
             workingDays: 2,
         },
-        status: 'pending',
+        status: 'late',
     },
     {
         id: 8,
@@ -210,7 +210,7 @@ function WardenLeave() {
             totalDays: 1,
             workingDays: 1,
         },
-        status: 'pending',
+        status: 'ontime',
     },
      {
         id: 10,
@@ -236,7 +236,7 @@ function WardenLeave() {
             totalDays: 3,
             workingDays: 2,
         },
-        status: 'rejected',
+        status: 'late',
     },
     {
         id: 11,
@@ -262,7 +262,7 @@ function WardenLeave() {
             totalDays: 3,
             workingDays: 2,
         },
-        status: 'rejected',
+        status: 'late',
     },
 ];
   return (
@@ -283,7 +283,7 @@ function WardenLeave() {
                 <tr>
                   <th className='applicant heading'>Applicant</th>
                   <th className='details1 heading'>Details</th>
-                  {/* <th className='actions heading'>Actions</th> */}
+                  <th className='status1 heading'>Status</th> 
                 </tr>
               </thead>
               <tbody>  
@@ -295,20 +295,26 @@ function WardenLeave() {
                     <strong>To:</strong> {request.leave.endDate} <br />
                     <strong>Reason:</strong> {request.leave.reason} <br />
                   </td>  
-                  {/* <td className='actions'>
-                    {request.status === 'pending' && (
+                  <td className='status1'>
+                    {/* {request.status === 'pending' && (
                       <button className='approve-button'>Approve</button>
                     )}
                     {request.status === 'pending' && (
                       <button className='reject-button'>Reject</button> 
-                    )}
+                    )} */}
                     {request.status === 'approved' && (
                       <span className='status-approved'>Approved</span>
                     )}
                     {request.status === 'rejected' && (
                       <span className='status-rejected'>Rejected</span>
                     )}
-                  </td> */}
+                    {request.status === 'late' && (
+                      <strong><span className='status-late'>Late Return</span></strong>
+                    )}
+                    {request.status === 'ontime' && (
+                      <span className='status-ontime'>On Time</span>
+                    )}
+                  </td>
                 </tr>  
                 ))}
               </tbody>  

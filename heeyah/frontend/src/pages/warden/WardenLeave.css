@@ -66,11 +66,11 @@ td{
 }
 
 .applicant {
-    width: 40%;
+    width: 30%;
 }
 
 .details1 {
-    width: 60%;
+    width: 50%;
 }
 
 .applicant, .details1 {
@@ -79,12 +79,12 @@ td{
     padding-left: 1.25rem;
 }
 
-/* .actions {
+.status1 {
     width: 20%;
     gap: 1.5rem;
 }
 
-.approve-button, .reject-button {
+/*.approve-button, .reject-button {
     padding: 0.5rem 1rem;
     margin-right: 0.5rem;
     border: none;
@@ -99,17 +99,21 @@ td{
 
 .reject-button {
     background-color: #f44336; 
-}
+} */
 
 .status-approved {
     text-align: center;
-    color: green;
+    color: blue;
 }
-.status-rejected {
+.status-late {
     text-align: center;
     color: red;
 }
 
+.status-ontime {
+    text-align: center;
+    color: green;
+}
 .heading {
     font-size: 1rem;
-} */
+} 
