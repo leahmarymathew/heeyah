@@ -18,7 +18,7 @@ router.post('/', protectAndFetchProfile, checkRole(['student']), createRequest);
 router.get('/my', protectAndFetchProfile, checkRole(['student']), getMyRequests);
 
 // A warden or admin gets all requests from all students
-router.get('/', protectAndFetchProfile, checkRole(['warden', 'admin']), getAllRequests);
+router.get('/', protectAndFetchProfile, checkRole(['student','warden', 'admin']), getAllRequests);
 
 // A warden or admin updates the status of a request
 router.put('/:id/status', protectAndFetchProfile, checkRole(['warden', 'admin']), updateRequestStatus);

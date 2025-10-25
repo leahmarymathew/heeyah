@@ -46,6 +46,12 @@ function Complaint() {
     setSuccess('');
 
     try {
+      console.log("Token being sent:", token);
+      if (!token) {
+  setError("You must be logged in to file a complaint.");
+  setLoading(false);
+  return;
+}
       const response = await axios.post(
         'http://localhost:3001/api/requests',
         formData,

@@ -3,13 +3,16 @@
 
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
-import Login from './pages/Login';
+import Login from './pages/login';
 import Dashboard from './pages/Dashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import LostAndFound from './pages/LostAndFound';
 import Complaint from './pages/Complaint';
 import StudentAttendance from './pages/StudentAttendance';
 import AppLayout from './components/AppLayout.jsx';
+import WardenLeave from './pages/warden/WardenLeave';
+import WardenAttendance from './pages/warden/WardenAttendance';
+import WardenComplaint from './pages/warden/WardenComplaint'
 
 function App() {
   return (
@@ -23,7 +26,13 @@ function App() {
         <Route path="/complaint" element={<Complaint />} />
         <Route path="/lost-and-found" element={<LostAndFound />} />
         <Route path="/attendance" element={<StudentAttendance />} /> 
+        <Route path="/warden-attendence" element={<WardenAttendance />} /> 
+        <Route path="/warden-complaint" element={<WardenComplaint/>} /> 
+        <Route path="/warden-leave" element={<WardenLeave/>} /> 
       </Route>
+
+       
+
       
       {/* Default route */}
       <Route path="*" element={<Login />} />
