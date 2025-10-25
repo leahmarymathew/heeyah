@@ -1,6 +1,6 @@
 
 import express from 'express';
-import { protect, checkRole } from '../middleware/authMiddleware.js';
+import { protectAndFetchProfile, checkRole } from '../middleware/authMiddleware.js';
 import { 
     getMyLeaveRecords, 
     getAllLeaveRecords, 
@@ -9,9 +9,9 @@ import {
 const router = express.Router();
 
 // Student routes
-router.get('/my', protect, checkRole(['student']), getMyLeaveRecords);
+router.get('/my', protectAndFetchProfile, checkRole(['student']), getMyLeaveRecords);
 
 // Warden/Admin routes
-router.get('/', protect, checkRole(['warden', 'admin']), getAllLeaveRecords);
+router.get('/', protectAndFetchProfile, checkRole(['warden', 'admin']), getAllLeaveRecords);
 
 export default router;

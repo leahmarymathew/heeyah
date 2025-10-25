@@ -1,13 +1,14 @@
 import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+// Removed axios as it's no longer needed for login here
+import { supabase } from '../supabase'; // Import the Supabase client
 import { AuthContext } from '../context/AuthContext';
 
 // Import your local images from the assets folder
-import loginIllustration from '../assets/login-illustration.png';
-import heeyahLogo from '../assets/heeyah-logo.png';
+import loginIllustration from '../assets/login-illustration.png'; // Assuming PNG
+import heeyahLogo from '../assets/heeyah-logo.png'; // Assuming PNG
 
-// Your embedded CSS styles remain the same, but we will remove the background-image rule.
+// Your embedded CSS styles remain exactly the same
 const LoginPageStyles = () => (
   <style>{`
     @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap');
@@ -158,13 +159,14 @@ const LoginPageStyles = () => (
 );
 
 export default function LoginPage() {
-  const [identifier, setIdentifier] = useState('');
+  const [identifier, setIdentifier] = useState(''); // This should now be the user's EMAIL
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   
   const navigate = useNavigate();
-  const { login } = useContext(AuthContext);
+  // We still use context to update app state if needed, Supabase handles the session
+  const { login } = useContext(AuthContext); 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -172,30 +174,38 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:3001/api/auth/login', {
-        email: identifier,
+      // --- Use Supabase Auth Client directly ---
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        email: identifier, // Supabase Auth requires email
         password: password,
       });
 
-      const { token, user } = response.data;
-      login(token, user);
-
-      if (user.role === 'student') {
-        navigate('/attendance');
-      } else if (user.role === 'warden') {
-        navigate('/warden-dashboard');
-      } else {
-        navigate('/dashboard');
+      if (signInError) {
+        throw signInError; // Let catch block handle Supabase errors
       }
+
+      // Supabase login successful. The onAuthStateChange listener in AuthContext
+      // will automatically update the global user state. 
+      // We call login here just in case immediate state update is needed, though it might be redundant.
+      if (data.session && data.user) {
+         login(data.session.access_token, data.user); 
+      }
+       
+      // --- Navigation ---
+      // Navigate to the main dashboard after Supabase confirms login. 
+      // The dashboard or layout components should handle role-specific UI.
+      navigate('/dashboard'); 
 
     } catch (err) {
       console.error('Login failed:', err);
-      setError(err.response?.data?.error || 'Login failed. Please check your credentials.');
+      // Use the error message from Supabase if available
+      setError(err.message || 'Login failed. Please check your credentials.'); 
     } finally {
       setLoading(false);
     }
   };
 
+  // --- JSX Structure remains exactly the same ---
   return (
     <>
       <LoginPageStyles />
@@ -209,15 +219,16 @@ export default function LoginPage() {
             <p className="welcome-text">Welcome back! Please login to your account.</p>
             <form className="login-form" onSubmit={handleSubmit}>
               <div className="form-group">
-                <label htmlFor="identifier">Roll Number or Email</label>
+                {/* Changed label for clarity since Supabase uses email */}
+                <label htmlFor="identifier">Email</label>
                 <input 
-                  type="text" 
+                  type="text" // Keep as text to allow email format
                   id="identifier" 
                   name="identifier" 
-                  placeholder="2024CS0042 or swalih@iiitkottayam.ac.in" 
+                  placeholder="user@iiitkottayam.ac.in" 
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
-                  required
+                  required // Added required attribute
                 />
               </div>
               <div className="form-group">
@@ -229,7 +240,7 @@ export default function LoginPage() {
                   placeholder="••••••••••" 
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  required
+                  required // Added required attribute
                 />
               </div>
               <div className="form-options">

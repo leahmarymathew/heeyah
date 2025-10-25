@@ -1,12 +1,12 @@
 import express from 'express';
-// Corrected the controller path from 'controller' to 'controllers'
-import { loginUser } from '../controllers/authController.js';
+// Removed the import for loginUser as it's no longer exported from the controller
 
 const router = express.Router();
 
-// @desc    Authenticate a user and get a token
-// @route   POST /api/auth/login
-// @access  Public
-router.post('/login', loginUser);
+// Route for traditional email/password login is removed as login is handled on the frontend.
+// router.post('/login', loginUser); 
+
+// You can add other auth-related routes here later if needed (e.g., get user profile)
 
 export default router;
+

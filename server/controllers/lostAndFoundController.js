@@ -24,7 +24,7 @@ export const reportLostItem = async (req, res) => {
     };
 
     const { data, error } = await supabase
-        .from('LOST_AND_FOUND')
+        .from('lost_and_found')
         .insert(newItem)
         .select()
         .single();

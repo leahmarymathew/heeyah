@@ -4,9 +4,9 @@ import SimpleCalendar from '../components/Calendar';
 import { AuthContext } from '../context/AuthContext'; // 👈 1. Import the AuthContext
 import './StudentAttendance.css';
 
-// Main App Component
+
 export default function StudentAttendance() {
-    // --- STATE MANAGEMENT ---
+   
     const today = new Date();
     const [selectedDate, setSelectedDate] = useState(today);
     const [displayDate, setDisplayDate] = useState(today);

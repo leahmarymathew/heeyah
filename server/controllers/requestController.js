@@ -5,28 +5,46 @@ import { v4 as uuidv4 } from 'uuid';
 // @route   POST /api/requests
 // @access  Student
 export const createRequest = async (req, res) => {
-    // This is the updated list of fields from your new form
-    const { firstName, lastName, email, phone, subject, complaint, isAnonymous } = req.body;
-    const studentProfile = req.profile; // Attached by the checkRole middleware
+    const { subject, complaint } = req.body;
+    const { userId } = req.user; 
 
     if (!subject || !complaint) {
         return res.status(400).json({ error: 'Subject and complaint description are required.' });
     }
+    if (!userId) {
+        console.error('Error in createRequest: req.user is missing.');
+        return res.status(401).json({ error: 'Authentication data missing.' });
+    }
 
     try {
+        // Find the student's roll_no using userId
+         const { data: studentProfile, error: profileError } = await supabase
+            .from('student') 
+            .select('roll_no')
+            .eq('user_id', userId)
+            .single();
+
+        // --- IMPROVED CHECK ---
+        // Explicitly check if the profile was found AND if it has a roll_no
+        if (profileError || !studentProfile || !studentProfile.roll_no) {
+            console.error(`Student profile or roll_no not found for user ID: ${userId}`, profileError);
+            // Log the actual profile found for debugging
+            console.log("Profile data found:", studentProfile); 
+            return res.status(404).json({ error: 'Student profile or roll number not found.' });
+        }
+        // --- END IMPROVED CHECK ---
+
         const request_id = `REQ-${uuidv4().slice(0, 6).toUpperCase()}`;
 
         const { data, error } = await supabase
-            .from('REQUEST')
+            .from('request') 
             .insert({
                 request_id,
-                roll_no: studentProfile.roll_no,
-                request_type: subject, // Using 'subject' from the form as the 'request_type'
+                roll_no: studentProfile.roll_no, // Now we know this exists
+                request_type: subject, 
                 description: complaint,
                 request_date: new Date().toISOString(),
                 status: 'pending',
-                // You may want to add columns in your DB to store these extra details
-                // for now, we are not saving firstName, email etc. as they are not in the REQUEST table
             })
             .select()
             .single();
@@ -44,11 +62,30 @@ export const createRequest = async (req, res) => {
 // @route   GET /api/requests/my
 // @access  Student
 export const getMyRequests = async (req, res) => {
-    const studentProfile = req.profile;
+    const { userId } = req.user;
+
+    if (!userId) {
+        console.error('Error in getMyRequests: req.user is missing.');
+        return res.status(401).json({ error: 'Authentication data missing.' });
+    }
 
     try {
+         const { data: studentProfile, error: profileError } = await supabase
+            .from('student') 
+            .select('roll_no')
+            .eq('user_id', userId)
+            .single();
+
+        // --- IMPROVED CHECK ---
+        if (profileError || !studentProfile || !studentProfile.roll_no) {
+            console.error(`Student profile or roll_no not found for user ID: ${userId}`, profileError);
+            console.log("Profile data found:", studentProfile);
+            return res.status(404).json({ error: 'Student profile or roll number not found.' });
+        }
+        // --- END IMPROVED CHECK ---
+
         const { data, error } = await supabase
-            .from('REQUEST')
+            .from('request') 
             .select('*')
             .eq('roll_no', studentProfile.roll_no)
             .order('request_date', { ascending: false });
@@ -68,8 +105,8 @@ export const getMyRequests = async (req, res) => {
 export const getAllRequests = async (req, res) => {
      try {
         const { data, error } = await supabase
-            .from('REQUEST')
-            .select('*, STUDENT(name, roll_no)')
+            .from('request') 
+            .select('*, student(name, roll_no)') 
             .order('request_date', { ascending: false });
 
         if (error) throw error;
@@ -94,7 +131,7 @@ export const updateRequestStatus = async (req, res) => {
 
     try {
         const { data, error } = await supabase
-            .from('REQUEST')
+            .from('request') 
             .update({ status })
             .eq('request_id', id)
             .select()
@@ -108,3 +145,4 @@ export const updateRequestStatus = async (req, res) => {
         res.status(500).json({ error: 'An internal server error occurred.' });
     }
 };
+

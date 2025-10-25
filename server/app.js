@@ -1,11 +1,23 @@
-// This is the updated version of your app.js file.
-// I've added the new route for the lost and found feature.
-
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 
-// --- Import Route Files ---
+const app = express();
+
+// --- Core Middleware ---
+app.use(cors());
+app.use(express.json());
+
+// ✅ Add this CSP Header Middleware BEFORE your routes:
+app.use((req, res, next) => {
+  res.setHeader(
+    "Content-Security-Policy",
+    "default-src 'none'; connect-src 'self' http://localhost:3001"
+  );
+  next();
+});
+
+// --- API Routes ---
 import authRoutes from './routes/authRoutes.js';
 import roomRoutes from './routes/roomRoutes.js';
 import studentRoutes from './routes/studentRoutes.js';
@@ -17,15 +29,8 @@ import roomAllocRoutes from './routes/roomAllocRoutes.js';
 import caretakerRoutes from './routes/caretakerRoutes.js';
 import hostelRoutes from './routes/hostelRoutes.js';
 import reportsRoutes from './routes/reportsRoutes.js';
-import lostAndFoundRoutes from './routes/lostAndFoundRoutes.js'; // <-- NEW IMPORT
+import lostAndFoundRoutes from './routes/lostAndFoundRoutes.js';
 
-const app = express();
-
-// --- Core Middleware ---
-app.use(cors());
-app.use(express.json());
-
-// --- API Routes ---
 app.use('/api/auth', authRoutes);
 app.use('/api/rooms', roomRoutes);
 app.use('/api/students', studentRoutes);
@@ -37,6 +42,6 @@ app.use('/api/allocate', roomAllocRoutes);
 app.use('/api/caretakers', caretakerRoutes);
 app.use('/api/hostels', hostelRoutes);
 app.use('/api/reports', reportsRoutes);
-app.use('/api/lost-and-found', lostAndFoundRoutes); // <-- NEW ROUTE
+app.use('/api/lost-and-found', lostAndFoundRoutes);
 
 export default app;
