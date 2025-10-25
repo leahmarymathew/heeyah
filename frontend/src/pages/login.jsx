@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import wel from '../assets/wel.png'
 
 // CSS styles are embedded here to avoid import errors
 const LoginPageStyles = () => (
   <style>{`
-    @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap');
+    @import url('https://fonts.fonts.gstatic.com/s/opensans/v34/memvYaGs126MiZpBA-IuWJjRVA.ttf');
 
     .login-page-container {
       display: flex;
@@ -119,7 +120,7 @@ const LoginPageStyles = () => (
       display: flex;
       align-items: center;
       justify-content: center;
-      background-color: #f8f9fa; /* Light gray placeholder background */
+      background-color: #FFFFFFFF; /* Light gray placeholder background */
       padding: 40px;
     }
     
@@ -127,11 +128,18 @@ const LoginPageStyles = () => (
     .image-placeholder {
         width: 100%;
         height: 100%;
-        max-width: 600px;
-        background-image: url('https://storage.googleapis.com/upload/prod/2282245_2024-09-08_15-46-24_image_475ef1.png');
-        background-size: contain;
-        background-repeat: no-repeat;
-        background-position: center;
+        /* REMOVED: max-width: 600px; */
+        /* ADDED: flex properties to center the image */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    /* ADDED: Style the image tag directly to ensure full fit */
+    .image-placeholder img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain; /* Ensures the entire image is visible without cropping */
     }
 
     /* Responsive adjustments */
@@ -234,6 +242,7 @@ export default function LoginPage() {
         {/* Right Side: Image Placeholder */}
         <div className="login-image-container">
             <div className="image-placeholder">
+              <img src={wel} />
             </div>
         </div>
       </div>
