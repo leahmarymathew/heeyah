@@ -351,3 +351,56 @@ body {
     0%, 100% { transform: translate(0, 0) scale(1); }
     50%      { transform: translate(-30%, -40%) rotate(-20deg) scale(1.1); }
 }
+
+.attendance-buttons {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    width: 100%;
+}
+
+.attendance-buttons button {
+    flex: 1;
+    padding: 12px 0;
+    font-size: 18px;
+    font-weight: 600;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Checked In Button */
+.checkin-btn {
+    background: linear-gradient(135deg, #4caf50, #81c784);
+    color: #fff;
+}
+
+/* Checked Out Button */
+.checkout-btn {
+    background: linear-gradient(135deg, #f44336, #e57373);
+    color: #fff;
+}
+
+/* Hover effect */
+.attendance-buttons button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    opacity: 0.9;
+}
+
+/* Disabled state */
+.attendance-buttons button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Optional: make card content slightly taller for better spacing */
+.daily-record {
+    padding: 2.5rem 2rem;
+    min-height: 220px;
+}

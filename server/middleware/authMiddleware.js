@@ -31,6 +31,7 @@ export const protectAndFetchProfile = async (req, res, next) => {
 
         // Attach user to request
         req.user = { userId: user.id, ...profile };
+        req.profile = req.user;
         console.log("req.user attached:", req.user);
 
         next();

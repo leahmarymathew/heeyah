@@ -89,10 +89,12 @@ td{
 
 .approve-button {
     background-color: #4CAF50; 
+    width: 50%;
 }
 
 .reject-button {
     background-color: #f44336; 
+    width: 50%;
 }
 
 .status-approved {

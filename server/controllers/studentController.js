@@ -70,3 +70,53 @@ export const getAllStudents = async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch students.' });
     }
 };
+
+
+/**
+ * @desc    Get all lost & found items
+ * @route   GET /api/students/lost-and-found
+ * @access  Public / Student
+ */
+export const getLostAndFoundItems = async (req, res) => {
+    try {
+        const { data, error } = await supabase
+            .from('lost_and_found')
+            .select(`
+                item_id,
+                item_name,
+                last_known_location,
+                last_seen_datetime,
+                image_url,
+                is_anonymous,
+                reported_by,
+                reported_at,
+                status
+            `)
+            .order('last_seen_datetime', { ascending: false });
+
+        if (error) {
+            console.error('Supabase error:', error);
+            return res.status(500).json({ error: 'Failed to fetch lost & found items' });
+        }
+
+        // Transform data for frontend
+        const transformedData = data.map(item => ({
+            id: item.item_id,
+            itemName: item.item_name,
+            lastKnownLocation: item.last_known_location,
+            lastSeenDate: item.last_seen_datetime, // keep raw, React will format
+            lastSeenTime: item.last_seen_datetime, // keep raw, React will format
+            photo: item.image_url,
+            name: item.is_anonymous ? 'Anonymous' : (item.reported_by || 'Unknown'),
+            phone: item.is_anonymous ? 'N/A' : null, // Add phone if you have a students table
+            status: item.status,
+            reportedAt: item.reported_at
+        }));
+
+        return res.json(transformedData);
+
+    } catch (err) {
+        console.error('Server error:', err);
+        return res.status(500).json({ error: 'Server error' });
+    }
+};

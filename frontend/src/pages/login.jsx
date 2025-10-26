@@ -1,14 +1,12 @@
 import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../supabase'; // Import the Supabase client
-import { AuthContext } from '../context/AuthContext'; // Import the context
+import { supabase } from '../supabase'; // Supabase client
+import { AuthContext } from '../context/AuthContext';
 
-// Import your local images from the assets folder
-// Assuming files are named heeyah-logo.png and login-illustration.png
 import loginIllustration from '../assets/login-illustration.png';
 import heeyahLogo from '../assets/heeyah-logo.png';
 
-// Your embedded CSS styles remain the same
+// Styles
 const LoginPageStyles = () => (
   <style>{`
     @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap');
@@ -41,9 +39,7 @@ const LoginPageStyles = () => (
     .login-main-content h1 {
       color: #3751FE;
       font-size: 36px;
-      font-family: 'Open Sans', sans-serif;
       font-weight: 700;
-      word-wrap: break-word;
       margin: 0;
     }
     
@@ -84,22 +80,22 @@ const LoginPageStyles = () => (
     }
 
     .form-options {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        font-size: 14px;
-        color: #6c757d;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+      color: #6c757d;
     }
 
     .remember-me {
-        display: flex;
-        align-items: center;
-        gap: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
     .remember-me input[type="checkbox"] {
-        width: 16px;
-        height: 16px;
+      width: 16px;
+      height: 16px;
     }
 
     .login-button {
@@ -114,12 +110,11 @@ const LoginPageStyles = () => (
       cursor: pointer;
       margin-top: 24px;
       transition: background-color 0.3s;
-      opacity: 1;
     }
-    
+
     .login-button:disabled {
-        background-color: #aeb8fe;
-        cursor: not-allowed;
+      background-color: #aeb8fe;
+      cursor: not-allowed;
     }
 
     .login-button:hover:not(:disabled) {
@@ -134,11 +129,11 @@ const LoginPageStyles = () => (
       background-color: #f8f9fa;
       padding: 40px;
     }
-    
+
     .login-image-container img {
-        width: 100%;
-        height: auto;
-        max-width: 600px;
+      width: 100%;
+      height: auto;
+      max-width: 600px;
     }
 
     @media (max-width: 992px) {
@@ -149,6 +144,7 @@ const LoginPageStyles = () => (
         padding: 40px 30px;
       }
     }
+
     .error-message {
       color: #dc3545;
       margin-top: 10px;
@@ -158,32 +154,14 @@ const LoginPageStyles = () => (
   `}</style>
 );
 
-
 export default function LoginPage() {
-  const [identifier, setIdentifier] = useState(''); // This will hold the email
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  
-  const navigate = useNavigate();
-  // Get the login function from our AuthContext
-  const { login } = useContext(AuthContext);
 
-  // Helper function to map role to the correct dashboard URL
-  const getRoleDashboard = (role) => {
-    switch (role) {
-      case 'student':
-        return '/attendance';      // Redirects students to the Attendance page
-      case 'warden':
-        return '/warden-dashboard'; // Redirects wardens to the Warden Dashboard
-      case 'admin':
-        return '/admin-dashboard';
-      case 'caretaker':
-        return '/dashboard';
-      default:
-        return '/dashboard';
-    }
-  };
+  const navigate = useNavigate();
+  const { login } = useContext(AuthContext);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -191,26 +169,46 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      // 1. Call the login function from AuthContext and get user data
-      const userData = await login(identifier, password);
+      // 1️⃣ Sign in
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        email: identifier,
+        password: password,
+      });
+      if (signInError) throw signInError;
+      if (!data.session || !data.user) throw new Error('Login failed: No session returned.');
 
+      const token = data.session.access_token;
 
-      // 2. Navigate based on user role
-      const destination = getRoleDashboard(userData.role);
-      navigate(destination);
+      // 2️⃣ Store token
+      localStorage.setItem('authToken', token);
 
+      // 3️⃣ Fetch student profile for roll_no
+      const { data: profile, error: profileError } = await supabase
+        .from('student')
+        .select('roll_no')
+        .eq('user_id', data.user.id)
+        .single();
 
+      if (profileError || !profile?.roll_no) {
+        throw new Error('Student profile not found. Cannot retrieve roll number.');
+      }
+
+      // 4️⃣ Store roll_no
+      localStorage.setItem('roll_no', profile.roll_no);
+
+      // 5️⃣ Update context
+      login(token, data.user);
+
+      // 6️⃣ Navigate
+      navigate('/dashboard');
     } catch (err) {
-      // The login function in AuthContext will throw an error if Supabase or profile fetch fails
       console.error('Login failed:', err);
-      // Use err.message which is returned from the AuthContext login function
-      setError(err.message || 'Login failed. Please check your credentials.'); 
+      setError(err.message || 'Login failed. Please check your credentials.');
     } finally {
       setLoading(false);
     }
   };
 
-  // --- JSX Structure ---
   return (
     <>
       <LoginPageStyles />
@@ -225,11 +223,11 @@ export default function LoginPage() {
             <form className="login-form" onSubmit={handleSubmit}>
               <div className="form-group">
                 <label htmlFor="identifier">Email</label>
-                <input 
-                  type="text" 
-                  id="identifier" 
-                  name="identifier" 
-                  placeholder="user@iiitkottayam.ac.in" 
+                <input
+                  type="text"
+                  id="identifier"
+                  name="identifier"
+                  placeholder="user@iiitkottayam.ac.in"
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
                   required
@@ -237,11 +235,11 @@ export default function LoginPage() {
               </div>
               <div className="form-group">
                 <label htmlFor="password">Password</label>
-                <input 
-                  type="password" 
-                  id="password" 
-                  name="password" 
-                  placeholder="••••••••••" 
+                <input
+                  type="password"
+                  id="password"
+                  name="password"
+                  placeholder="••••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -250,7 +248,9 @@ export default function LoginPage() {
               <div className="form-options">
                 <div className="remember-me">
                   <input type="checkbox" id="remember" name="remember" />
-                  <label htmlFor="remember" style={{ marginBottom: 0, fontWeight: 'normal' }}>Remember Me</label>
+                  <label htmlFor="remember" style={{ marginBottom: 0, fontWeight: 'normal' }}>
+                    Remember Me
+                  </label>
                 </div>
               </div>
               <button type="submit" className="login-button" disabled={loading}>

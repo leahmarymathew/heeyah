@@ -2,7 +2,8 @@ import express from 'express';
 import { protectAndFetchProfile, checkRole } from '../middleware/authMiddleware.js';
 import { 
     registerStudent,
-    getAllStudents 
+    getAllStudents,
+    getLostAndFoundItems
 } from '../controllers/studentController.js';
 // We removed the incorrect import of 'getStudentAllocation' from this file.
 
@@ -16,5 +17,8 @@ router.get('/', protectAndFetchProfile, checkRole(['warden', 'admin']), getAllSt
 
 // The route for a student to get their own allocation
 // is now correctly located in 'roomAllocRoutes.js'
+
+router.get('/lost-and-found', getLostAndFoundItems);
+
 
 export default router;
