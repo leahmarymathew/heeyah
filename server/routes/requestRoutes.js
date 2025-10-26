@@ -6,13 +6,17 @@ import {
     createRequest,
     getMyRequests,
     getAllRequests,
-    updateRequestStatus
+    updateRequestStatus,
+    createSimpleRequest
 } from '../controllers/requestController.js';
 
 const router = express.Router();
 
 // A student creates a new request
 router.post('/', protectAndFetchProfile, checkRole(['student']), createRequest);
+
+// Simple complaint filing - no heavy authentication
+router.post('/simple', createSimpleRequest);
 
 // A student gets their own list of requests
 router.get('/my', protectAndFetchProfile, checkRole(['student']), getMyRequests);

@@ -15,6 +15,8 @@ const LocationIcon = () => (
 );
 
 function Complaint() {
+  const { user } = useContext(AuthContext);
+
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -29,7 +31,19 @@ function Complaint() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const { token } = useContext(AuthContext);
+  // Auto-fill user information when component mounts
+  React.useEffect(() => {
+    if (user) {
+      const nameParts = user.name ? user.name.split(' ') : ['', ''];
+      setFormData(prev => ({
+        ...prev,
+        firstName: nameParts[0] || '',
+        lastName: nameParts.slice(1).join(' ') || '',
+        email: user.email || '',
+        phone: user.phone_no || ''
+      }));
+    }
+  }, [user]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -46,28 +60,44 @@ function Complaint() {
     setSuccess('');
 
     try {
-      console.log("Token being sent:", token);
-      if (!token) {
-        setError("You must be logged in to file a complaint.");
+      // Check if user is logged in and has roll number
+      if (!user || !user.roll_no) {
+        setError("You must be logged in as a student to file a complaint.");
         setLoading(false);
         return;
       }
+
+      if (!formData.complaint.trim()) {
+        setError("Please describe your complaint.");
+        setLoading(false);
+        return;
+      }
+
+      console.log("Filing complaint for student:", user.name, "Roll No:", user.roll_no);
+
       const response = await axios.post(
-        'http://localhost:3001/api/requests',
-        formData,
-        { headers: { Authorization: `Bearer ${token}` } }
+        'http://localhost:3001/api/requests/simple',
+        {
+          rollNo: user.roll_no,
+          subject: formData.subject,
+          complaint: formData.complaint,
+          studentName: user.name
+        }
       );
 
       if (response.status === 201) {
-        setSuccess('Complaint Filed Successfully!');
+        setSuccess(`Complaint Filed Successfully for ${response.data.student} (${response.data.rollNo})!`);
         // Reset form
-        setFormData({
-          firstName: "", lastName: "", email: "", phone: "",
-          subject: "General Inquiry", complaint: "", isAnonymous: true,
-        });
-        setTimeout(() => setSuccess(''), 3000); // Clear success message after 3 seconds
+        setFormData(prev => ({
+          ...prev,
+          subject: "General Inquiry",
+          complaint: "",
+          isAnonymous: true,
+        }));
+        setTimeout(() => setSuccess(''), 5000); // Clear success message after 5 seconds
       }
     } catch (err) {
+      console.error("Complaint filing error:", err);
       setError(err.response?.data?.error || 'Failed to file complaint.');
     } finally {
       setLoading(false);
@@ -115,6 +145,13 @@ function Complaint() {
 
         {/* Right Column - Form */}
         <section className="lg:col-span-2 p-4 sm:p-8">
+          {user && (
+            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm text-blue-800">
+                <strong>Filing complaint as:</strong> {user.name} ({user.roll_no})
+              </p>
+            </div>
+          )}
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
