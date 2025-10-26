@@ -24,7 +24,7 @@ function Complaint() {
     complaint: "",
     isAnonymous: true,
   });
-  
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -48,10 +48,10 @@ function Complaint() {
     try {
       console.log("Token being sent:", token);
       if (!token) {
-  setError("You must be logged in to file a complaint.");
-  setLoading(false);
-  return;
-}
+        setError("You must be logged in to file a complaint.");
+        setLoading(false);
+        return;
+      }
       const response = await axios.post(
         'http://localhost:3001/api/requests',
         formData,
@@ -77,13 +77,13 @@ function Complaint() {
   return (
     <div className="min-h-[calc(100vh-80px)] bg-white p-4 sm:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
+
         {/* Left Column */}
         <aside className="lg:col-span-1 bg-primary-blue text-white rounded-2xl p-8 relative overflow-hidden">
           <div className="relative z-10">
             <h2 className="text-3xl font-bold mb-2">Complaint Box</h2>
             <p className="text-blue-200 mb-8">Contact wardens anytime between <strong>8pm to 10pm</strong></p>
-            
+
             <div className="space-y-6 mb-12">
               <div className="flex items-center gap-4">
                 <span className="bg-white/20 p-2 rounded-full"><PhoneIcon /></span>
@@ -100,12 +100,12 @@ function Complaint() {
             </div>
 
             <div className="border-t border-white/20 pt-8">
-                <h3 className="text-xl font-semibold mb-2">Lost anything?</h3>
-                <Link to="/lost-and-found">
-                    <button className="w-3 bg-white text-primary-blue font-bold py-2 px-6 rounded-lg hover:bg-gray-200 transition">
-                        Lost and Found
-                    </button>
-                </Link>
+              <h3 className="text-xl font-semibold mb-2">Lost anything?</h3>
+              <Link to="/lost-and-found">
+                <button className="bg-white text-primary-blue font-bold py-2 px-6 rounded-lg hover:bg-gray-200 transition">
+                  Lost and Found
+                </button>
+              </Link>
             </div>
           </div>
           {/* Decorative Circles */}
@@ -137,7 +137,7 @@ function Complaint() {
                 <input type="text" name="phone" value={formData.phone} onChange={handleChange} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-blue focus:border-primary-blue" />
               </div>
             </div>
-            
+
             <div>
               <label className="text-sm font-medium text-gray-700">Select Subject?</label>
               <div className="mt-2 grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -164,12 +164,12 @@ function Complaint() {
                 {loading ? 'Submitting...' : 'File Complaint'}
               </button>
             </div>
-            
+
             {/* Success Toast */}
             {success && (
-                <div className="fixed bottom-5 right-5 bg-green-500 text-white py-2 px-4 rounded-lg shadow-lg">
-                    {success}
-                </div>
+              <div className="fixed bottom-5 right-5 bg-green-500 text-white py-2 px-4 rounded-lg shadow-lg">
+                {success}
+              </div>
             )}
             {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
           </form>

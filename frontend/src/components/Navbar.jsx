@@ -27,7 +27,7 @@ function Navbar() {
       case 'warden':
         return [
           { to: '/warden-dashboard', label: 'Student' },
-          { to: '/room-allocation', label: 'Room Management' }
+          { to: '/warden-room-management', label: 'Room Allocation' }
         ];
       case 'admin':
         return [

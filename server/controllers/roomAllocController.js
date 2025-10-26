@@ -9,7 +9,7 @@ export const requestRoomAllocation = async (req, res) => {
     // We change 'room_number' to 'room_id' to match what the frontend is sending.
     // We also rename it to 'room_number' so the rest of the function works.
     const { room_id: room_number, bed_number } = req.body; 
-    const studentProfile = req.profile; 
+    const studentProfile = req.user; 
 
     if (!room_number || !bed_number) {
         return res.status(400).json({ error: 'Room Number and Bed Number are required.' });
@@ -39,14 +39,21 @@ export const requestRoomAllocation = async (req, res) => {
         // 2. Check if student already has an approved allocation
         const { data: existing, error: existingError } = await supabase
             .from('room_alloc')
-            .select('assignment_id')
+            .select('assignment_id, room_id, bed_number, room(room_number)')
             .eq('roll_no', studentProfile.roll_no)
             .eq('status', 'approved')
             .limit(1);
 
         if (existingError) throw existingError;
         if (existing.length > 0) {
-            return res.status(400).json({ error: 'You already have an approved room allocation.' });
+            const existingRoom = existing[0];
+            return res.status(400).json({ 
+                error: 'You already have an approved room allocation.',
+                existingAllocation: {
+                    roomNumber: existingRoom.room.room_number,
+                    bedNumber: existingRoom.bed_number
+                }
+            });
         }
         
         // 3. Check if the specific bed is already taken
@@ -100,7 +107,7 @@ export const requestRoomAllocation = async (req, res) => {
 // @route   GET /api/allocate/my-status
 // @access  Student
 export const getMyAllocationStatus = async (req, res) => {
-    const studentProfile = req.profile;
+    const studentProfile = req.user;
 
     if (!studentProfile || !studentProfile.roll_no) {
         return res.status(401).json({ error: 'Student profile not found.' });
@@ -111,15 +118,88 @@ export const getMyAllocationStatus = async (req, res) => {
             .from('room_alloc')
             .select('*, room(room_number, floor)') // Join with room table
             .eq('roll_no', studentProfile.roll_no)
+            .eq('status', 'approved')
             .order('allocation_start', { ascending: false })
             .limit(1);
 
         if (error) throw error;
-        res.status(200).json(data); 
+        
+        if (data.length > 0) {
+            res.status(200).json({ 
+                hasAllocation: true,
+                allocation: {
+                    roomNumber: data[0].room.room_number,
+                    bedNumber: data[0].bed_number,
+                    floor: data[0].room.floor,
+                    status: data[0].status
+                }
+            });
+        } else {
+            res.status(200).json({ 
+                hasAllocation: false,
+                allocation: null
+            });
+        }
 
     } catch (error) {
         console.error("Error in getMyAllocationStatus:", error.message);
         res.status(500).json({ error: 'Failed to get allocation status.' });
+    }
+};
+
+// @desc    Warden removes a student from a room
+// @route   DELETE /api/allocate/remove
+// @access  Warden
+export const removeStudentFromRoom = async (req, res) => {
+    const { rollNo, roomId } = req.body;
+    const wardenProfile = req.user;
+
+    if (!rollNo || !roomId) {
+        return res.status(400).json({ error: 'Roll number and room ID are required.' });
+    }
+
+    if (!wardenProfile || wardenProfile.role !== 'warden') {
+        return res.status(403).json({ error: 'Only wardens can remove students from rooms.' });
+    }
+
+    try {
+        // Find the room by room number to get the actual room_id
+        const { data: room, error: roomError } = await supabase
+            .from('room')
+            .select('room_id')
+            .eq('room_number', roomId)
+            .single();
+
+        if (roomError || !room) {
+            return res.status(404).json({ error: `Room ${roomId} not found.` });
+        }
+
+        // Find and delete the allocation
+        const { data: allocation, error: findError } = await supabase
+            .from('room_alloc')
+            .select('assignment_id')
+            .eq('roll_no', rollNo)
+            .eq('room_id', room.room_id)
+            .eq('status', 'approved')
+            .single();
+
+        if (findError || !allocation) {
+            return res.status(404).json({ error: 'Student allocation not found in this room.' });
+        }
+
+        // Delete the allocation
+        const { error: deleteError } = await supabase
+            .from('room_alloc')
+            .delete()
+            .eq('assignment_id', allocation.assignment_id);
+
+        if (deleteError) throw deleteError;
+
+        res.status(200).json({ message: `Student ${rollNo} has been removed from room ${roomId} successfully.` });
+
+    } catch (error) {
+        console.error("Error in removeStudentFromRoom:", error.message);
+        res.status(500).json({ error: 'Failed to remove student from room.' });
     }
 };
 
