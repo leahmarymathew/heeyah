@@ -194,9 +194,11 @@ export default function LoginPage() {
       // 1. Call the login function from AuthContext and get user data
       const userData = await login(identifier, password);
 
+
       // 2. Navigate based on user role
       const destination = getRoleDashboard(userData.role);
       navigate(destination);
+
 
     } catch (err) {
       // The login function in AuthContext will throw an error if Supabase or profile fetch fails

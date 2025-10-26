@@ -1,0 +1,125 @@
+/* --- Main Layout --- */
+.main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start; /* Aligns form to the top */
+    min-height: 100vh;
+    padding: 2rem;
+    background-color: #f4f7f6; /* Light gray background */
+    padding-bottom: 6rem;
+}
+
+.leave-form-container {
+    width: 100%;
+    max-width: 500px; /* Constrain form width */
+    background: #ffffff;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+
+.leave-form h2 {
+    text-align: center;
+    margin-bottom: 2rem;
+    color: #333;
+    font-size: 1.8rem;
+}
+
+.leave-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem; /* Space between form rows */
+}
+
+.form-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem; /* Space between label and input */
+}
+
+.form-row label {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #374151; /* Dark gray */
+}
+
+/* --- Input & Button Styling --- */
+input[type="time"],
+textarea,
+.date-select-button {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 1rem;
+    font-family: inherit;
+    border: 1px solid #d1d5db; /* Light gray border */
+    border-radius: 6px;
+    background-color: #fff;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input[type="time"]:focus,
+textarea:focus {
+    outline: none;
+    border-color: #3b82f6; /* Blue border on focus */
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+/* --- Date Select Button --- */
+.date-select-button {
+    text-align: left;
+    color: #9ca3af; /* Gray placeholder text */
+    cursor: pointer;
+}
+
+.date-select-button.is-set {
+    color: #111827; /* Black text when date is set */
+    font-weight: 500;
+}
+
+/* --- Submit Button --- */
+.submit-button {
+    padding: 0.85rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #ffffff;
+    background-color: #3b82f6; /* Blue */
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s, box-shadow 0.2s;
+    margin-top: 1rem;
+}
+
+.submit-button:hover {
+    background-color: #2563eb; /* Darker blue */
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+}
+
+/* --- Calendar Modal Styling --- */
+.calendar-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.calendar-modal {
+  align-self: center;
+  justify-self: center;
+  background: white;
+  border-radius: 12px;
+  padding: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}

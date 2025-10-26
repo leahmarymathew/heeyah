@@ -1,0 +1,148 @@
+* {
+    margin: 0; 
+    padding: 0; 
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+body { 
+    background-color: #fff; 
+    overflow: hidden; 
+    color: black;
+    overflow-y: scroll;
+}
+
+.main {
+    position: relative;
+    display: flex; 
+    flex-direction: column;
+    align-items: center; 
+    height: 100vh;
+}
+
+.image-button {
+  position: absolute; 
+  top: 15px;          
+  left: 30px;         
+  z-index: 10;        
+  background: none;
+  border: none;
+  padding: 5px;
+  cursor: pointer;
+  border-radius: 50%; 
+  transition: background-color 0.2s;
+}
+
+.image-button:hover {
+  opacity: 0.8; 
+}
+
+.head {
+    font-size: 1.25rem;
+    font-weight: 500;
+}
+
+.warden-attendance-container {
+    width: 80%;
+    margin-top: 2rem;
+    padding: 1rem;
+}
+
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 1rem;
+    margin-top: 1rem;
+}
+
+th {
+    padding: 0.5rem;
+    border-bottom: 2px solid #000;
+    text-align: left;
+}
+
+td{
+    padding: 0.25rem;
+}
+
+.default {
+    color: grey;
+}
+
+.present {
+    color: rgb(14, 196, 20);
+}
+
+.late {
+    color: red;
+}
+
+.leave {
+    color: blue;
+    text-shadow: none;
+    font: inherit;
+}
+
+.remark {
+    color: orange;
+}
+
+.date-changer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.date-changer span {
+    background-color: rgb(75, 75, 226);
+    color: white;
+    padding: 0.3rem 0.85rem;
+    font-size: 0.8rem;
+    border-radius: 2rem;
+    position: relative;
+    z-index: 1; 
+    border: 2px solid rgb(75, 75, 226);
+}
+
+.date-changer button {
+    background-color: rgb(110, 120, 240);
+    color: rgb(255, 255, 255);
+    text-decoration: underline;
+    border: none;
+    font-size: 0.8rem;
+    cursor: pointer;    
+    transition: background-color 0.2s;
+    border-top-right-radius: 2rem;
+    border-bottom-right-radius: 2rem;
+    margin-left: -12px;
+    padding-left: calc(12px + 0.85rem);
+    padding-top: 0.3rem;
+    padding-bottom: 0.3rem;
+    padding-right: 0.85rem;
+    border: 2px solid rgb(129, 140, 248);
+}
+
+.date-changer button:hover {
+    background-color: rgb(129, 140, 248);
+    border-color: rgb(110, 120, 240);
+}
+
+/* .calendar-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center; 
+  justify-content: center; 
+  z-index: 1000;
+} */
+
+.calendar-modal {
+  background: white;
+  border-radius: 8px;
+  padding: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
