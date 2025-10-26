@@ -13,7 +13,6 @@ const WardenDashboard = () => {
               <li>Consectetur adipiscing elit.</li>
               <li>Integer molestie lorem at massa.</li>
             </ul>
-            <button className="btnInsights">View Detailed Insights</button>
           </div>
 
           <div className="leaves">
