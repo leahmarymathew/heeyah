@@ -121,7 +121,7 @@ function Complaint() {
               </div>
               <div className="flex items-center gap-4">
                 <span className="bg-white/20 p-2 rounded-full"><EmailIcon /></span>
-                <span>adwaith@iiitkottayam.ac.in</span>
+                <span>student@test.com</span>
               </div>
               <div className="flex items-center gap-4">
                 <span className="bg-white/20 p-2 rounded-full"><LocationIcon /></span>

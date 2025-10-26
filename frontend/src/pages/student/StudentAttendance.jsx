@@ -868,7 +868,7 @@ export default function StudentAttendance() {
               <p className="leave-date">{formatDisplayDate(latestLeave.leave_start_time)}</p>
               <p className="leave-status">{latestLeave.approved_by ? "Approved" : "Rejected"}</p>
             </div>
-          ) : <p className="no-leave-text">No Leave Records Found</p>
+          ) : <p className="no-leave-text">Leave</p>
         }
       </div>
     </>

@@ -2,7 +2,7 @@ import React, { useState, useContext } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../../context/AuthContext';
 import './studentLeave.css';
-import Navbar from "../../components/Navbar";
+
 import SimpleCalendar from '../../components/Calendar';
 
 const API_BASE_URL = 'http://localhost:3001'; // backend URL
@@ -123,7 +123,6 @@ const StudentLeave = () => {
 
     return (
         <>
-            <Navbar />
             <div className="main">
                 <div className="leave-form-container">
                     <form className="leave-form" onSubmit={handleSubmit}>

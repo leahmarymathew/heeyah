@@ -11,7 +11,7 @@ function LostAndFound() {
     const [location, setLocation] = useState('');
     const [dateTime, setDateTime] = useState('');
     const [imageFile, setImageFile] = useState(null);
-    const [isAnonymous, setIsAnonymous] = useState(false);
+
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
@@ -81,7 +81,7 @@ function LostAndFound() {
                     location: location || 'Not specified',
                     dateTime: dateTime || new Date().toISOString(),
                     imageUrl: imageUrl,
-                    isAnonymous: isAnonymous,
+                    isAnonymous: false,
                     studentName: user.name
                 }
             );
@@ -94,7 +94,7 @@ function LostAndFound() {
                 setDateTime('');
                 setImageFile(null);
                 setImagePreview('');
-                setIsAnonymous(false);
+
                 setTimeout(() => setSuccess(''), 5000);
             }
         } catch (err) {
@@ -111,23 +111,8 @@ function LostAndFound() {
             <div className="absolute bottom-[-150px] right-[-150px] w-[400px] h-[400px] bg-gradient-to-tr from-blue-300 to-purple-300 rounded-full blur-3xl opacity-50"></div>
 
             <main className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 z-10">
-                <div className="flex justify-between items-center mb-10">
+                <div className="mb-10">
                     <h1 className="text-4xl font-bold text-gray-900">Lost and Found</h1>
-                    <div className="flex items-center">
-                        <span className="mr-4 text-sm font-medium text-gray-600">Keep your name anonymous</span>
-                        <button
-                            onClick={() => setIsAnonymous(!isAnonymous)}
-                            className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors duration-300 focus:outline-none ${
-                                isAnonymous ? 'bg-indigo-600' : 'bg-gray-300'
-                            }`}
-                        >
-                            <span
-                                className={`inline-block w-4 h-4 transform bg-white rounded-full transition-transform duration-300 ${
-                                    isAnonymous ? 'translate-x-6' : 'translate-x-1'
-                                }`}
-                            />
-                        </button>
-                    </div>
                 </div>
                 
                 {/* User Info Display */}

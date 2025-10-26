@@ -89,13 +89,13 @@ body {
     background: linear-gradient(135deg, #c4dbff, #8faeff);
     border-radius: 20px;
     box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.12);
-    padding: 2rem;
+    padding: 2rem 2rem 2.5rem 2rem;
     color: #000;
     display: flex; 
     flex-direction: column;
     align-items: center;
-    justify-content: center; 
-    height: 200px;
+    justify-content: flex-start; 
+    min-height: 240px;
 }
 
 .attendance-card { 
@@ -357,6 +357,7 @@ body {
     justify-content: space-between;
     gap: 1rem;
     margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
     width: 100%;
 }
 
@@ -399,8 +400,4 @@ body {
     box-shadow: none;
 }
 
-/* Optional: make card content slightly taller for better spacing */
-.daily-record {
-    padding: 2.5rem 2rem;
-    min-height: 220px;
-}
+

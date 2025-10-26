@@ -250,6 +250,58 @@
 .status-progress {
   background-color: #3B82F6 !important; /* Blue for in progress */
 }
+
+.status-approved {
+  background-color: #10B981 !important; /* Green for approved */
+  color: white;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.status-rejected {
+  background-color: #EF4444 !important; /* Red for rejected */
+  color: white;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Student Reports Styles */
+.stats-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.stat-info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  text-align: center;
+}
+
+.stat-number {
+  font-size: 32px;
+  font-weight: bold;
+  color: white;
+}
+
+.stat-label {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.9);
+}
 /* 
 Responsive design */
 @media (max-width: 1024px) {

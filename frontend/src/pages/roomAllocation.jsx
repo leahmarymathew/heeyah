@@ -106,7 +106,7 @@ const RoomAllocationPage = () => {
                             <option value="4">Floor 4</option>
                             <option value="5">Floor 5</option>
                         </select>
-                        <button className='allot'>Allot</button>
+
                     </div>
                 </div>
                 

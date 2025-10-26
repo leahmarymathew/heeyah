@@ -1,22 +1,16 @@
 // src/pages/WardenRoomManagement.jsx
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabase';
+import WardenLayout from '../components/WardenLayout';
 import WardenRoomOverlay from './WardenRoomOverlay'; // IMPORT THE NEW WARDEN OVERLAY
 import './RoomAllocation.css'; // Reusing the same CSS as the allocation page
-import './WardenRoomManagement.css'; // Header styles
 
 const WardenRoomManagement = () => {
-    const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedFloor, setSelectedFloor] = useState('1');
     const [rooms, setRooms] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [selectedRoomId, setSelectedRoomId] = useState(null);
-
-    const handleBack = () => {
-        navigate('/warden-dashboard');
-    };
 
     useEffect(() => {
         const fetchRooms = async () => {
@@ -29,12 +23,19 @@ const WardenRoomManagement = () => {
                     .select('room_id, room_number, floor, hostel_wing, capacity')
                     .eq('floor', selectedFloor);
 
-                if (searchQuery) {
-                    roomQuery = roomQuery.ilike('room_number', `%${searchQuery}%`);
+                // Apply search filter if there's a search query
+                if (searchQuery && searchQuery.trim()) {
+                    const searchTerm = searchQuery.trim().toUpperCase();
+                    roomQuery = roomQuery.ilike('room_number', `%${searchTerm}%`);
                 }
 
                 const { data: roomsData, error: roomError } = await roomQuery;
-                if (roomError) throw roomError;
+                if (roomError) {
+                    console.error('Room query error:', roomError);
+                    throw roomError;
+                }
+
+                console.log('Search query:', searchQuery, 'Floor:', selectedFloor, 'Rooms found:', roomsData?.length);
 
                 // Fetch room allocations
                 const { data: allocations, error: allocError } = await supabase
@@ -101,15 +102,7 @@ const WardenRoomManagement = () => {
     };
 
     return (
-        <div className="room-management-page">
-            {/* Add back button header */}
-            <div className="room-header">
-                <button className="back-button" onClick={handleBack}>
-                    ← Back
-                </button>
-                <h1 className="page-title">Room Management</h1>
-            </div>
-
+        <WardenLayout>
             <div className="help">
                 <div className="help-info">
                     <div className="circle reserved"></div>
@@ -190,7 +183,7 @@ const WardenRoomManagement = () => {
 
             {/* RENDER THE NEW WARDEN OVERLAY */}
             {selectedRoomId && <WardenRoomOverlay roomId={selectedRoomId} onClose={() => setSelectedRoomId(null)} />}
-        </div>
+        </WardenLayout>
     );
 };
 
