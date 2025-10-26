@@ -102,7 +102,7 @@ function Complaint() {
             <div className="border-t border-white/20 pt-8">
                 <h3 className="text-xl font-semibold mb-2">Lost anything?</h3>
                 <Link to="/lost-and-found">
-                    <button className="bg-white text-primary-blue font-bold py-2 px-6 rounded-lg hover:bg-gray-200 transition">
+                    <button className="w-3 bg-white text-primary-blue font-bold py-2 px-6 rounded-lg hover:bg-gray-200 transition">
                         Lost and Found
                     </button>
                 </Link>
@@ -160,7 +160,7 @@ function Complaint() {
                 <input type="checkbox" name="isAnonymous" checked={formData.isAnonymous} onChange={handleChange} className="rounded text-primary-blue focus:ring-primary-blue" />
                 <span className="text-sm text-gray-600">Keep your name anonymous</span>
               </label>
-              <button type="submit" disabled={loading} className="bg-primary-blue text-white font-bold py-3 px-8 rounded-lg hover:bg-blue-700 transition disabled:bg-gray-400">
+              <button type="submit" disabled={loading} className="text-sm bg-primary-blue text-white font-bold rounded-lg hover:bg-blue-700 transition disabled:bg-gray-400">
                 {loading ? 'Submitting...' : 'File Complaint'}
               </button>
             </div>
