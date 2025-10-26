@@ -2,6 +2,10 @@
 
 /* REMOVED: Global resets and body styles to avoid overriding index.css and app layout */
 
+*{
+    font-family: 'Roboto', sans-serif;
+}
+
 .help {
     padding: 1.5rem 0 0 0;
     display: flex;
@@ -218,4 +222,10 @@ button:active {
     margin: 20px;
     font-size: 16px;
     color: #666;
+}
+
+.allot {
+    background-color: #1976d2;
+    color: white;
+    font-weight: 700;
 }

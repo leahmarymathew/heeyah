@@ -9,7 +9,7 @@ import heeyahLogo from '../assets/heeyah-logo.png';
 // Styles
 const LoginPageStyles = () => (
   <style>{`
-    @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
 
     .login-page-container {
       display: flex;
@@ -100,7 +100,6 @@ const LoginPageStyles = () => (
 
     .login-button {
       width: 100%;
-      padding: 14px;
       font-size: 16px;
       font-weight: 700;
       color: #fff;

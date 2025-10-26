@@ -211,7 +211,7 @@ function LostAndFound() {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="bg-indigo-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-indigo-700 transition duration-300 disabled:bg-gray-400"
+                                className="bg-indigo-600 text-white font-bold  rounded-lg hover:bg-indigo-700 transition duration-300 disabled:bg-gray-400"
                             >
                                 {loading ? 'Submitting...' : 'Report'}
                             </button>
