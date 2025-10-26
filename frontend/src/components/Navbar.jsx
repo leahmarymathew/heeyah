@@ -155,7 +155,7 @@ function Navbar() {
   };
 
   return (
-    <header className="bg-white sticky top-0 z-10">
+    <header className="bg-white sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20 border-b border-gray-200">
 
@@ -168,9 +168,9 @@ function Navbar() {
             {/* Icon Button for Student Lost & Found */}
             {user?.role === 'student' && (
               <button
-                onClick={() => navigate('/lost-and-found')}
+                onClick={() => navigate('/student-lost-found')}
                 className="text-gray-500 hover:text-primary-blue transition-colors p-2 rounded-full hover:bg-gray-100"
-                title="Lost & Found"
+                title="Lost & Found Messages"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
@@ -196,7 +196,7 @@ function Navbar() {
                 {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
               </div>
               {/* Dropdown menu */}
-              <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+              <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[9999]">
                 <div className="py-2">
                   <div className="px-4 py-3 border-b border-gray-100">
                     <div className="font-semibold text-gray-900">{user?.name}</div>

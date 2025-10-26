@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import axios from 'axios';
-import { supabase } from '../../supabase'; // your Supabase client
+import { AuthContext } from '../../context/AuthContext';
 import './studentLeave.css';
+import Navbar from "../../components/Navbar";
 import SimpleCalendar from '../../components/Calendar';
 
 const API_BASE_URL = 'http://localhost:3001'; // backend URL
 
 const StudentLeave = () => {
+    const { user } = useContext(AuthContext);
     const [startDate, setStartDate] = useState(null);
     const [endDate, setEndDate] = useState(null);
     const [startTime, setStartTime] = useState('');
@@ -39,7 +41,10 @@ const StudentLeave = () => {
     const handleDateSelect = (newDate) => {
         if (calendarTarget === 'start') {
             setStartDate(newDate);
-            if (endDate && newDate > endDate) setEndDate(null);
+            // If new start date is after the end date, clear the end date
+            if (endDate && newDate > endDate) {
+                setEndDate(null);
+            }
         } else if (calendarTarget === 'end') {
             setEndDate(newDate);
         }
@@ -52,8 +57,13 @@ const StudentLeave = () => {
         return new Date();
     };
 
+    // Determine the minimum date for the calendar
     const getMinDateForCalendar = () => {
-        if (calendarTarget === 'end') return startDate || new Date();
+        // For 'End Date', the min date is the 'Start Date' (or today if 'Start Date' isn't set)
+        if (calendarTarget === 'end') {
+            return startDate || new Date();
+        }
+        // For 'Start Date', the min date is always today
         return new Date();
     };
 
@@ -63,6 +73,13 @@ const StudentLeave = () => {
         setError('');
         setSuccess('');
 
+        // Check if user is logged in
+        if (!user || !user.roll_no) {
+            setError('You must be logged in as a student to submit leave.');
+            setLoading(false);
+            return;
+        }
+
         if (!startDate || !endDate || !startTime || !endTime || !purpose) {
             setError('Please fill in all fields.');
             setLoading(false);
@@ -70,22 +87,10 @@ const StudentLeave = () => {
         }
 
         try {
-            // 1. Get current Supabase session token
-            const {
-                data: { session },
-                error: sessionError,
-            } = await supabase.auth.getSession();
-
-            if (sessionError || !session?.access_token) {
-                setError('Session expired. Please log in again.');
-                setLoading(false);
-                return;
-            }
-
-            const token = session.access_token;
-
-            // 2. Prepare data
+            // Prepare data with user information
             const leaveData = {
+                rollNo: user.roll_no,
+                studentName: user.name,
                 startDate: startDate.toISOString().split('T')[0],
                 endDate: endDate.toISOString().split('T')[0],
                 startTime,
@@ -93,23 +98,24 @@ const StudentLeave = () => {
                 purpose,
             };
 
-            // 3. Axios POST request
-            const res = await axios.post(`${API_BASE_URL}/api/leave/create`, leaveData, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                },
-            });
+            console.log('Submitting leave for:', user.name, 'Roll No:', user.roll_no);
 
-            setSuccess('Leave submitted successfully!');
-            setStartDate(null);
-            setEndDate(null);
-            setStartTime('');
-            setEndTime('');
-            setPurpose('');
+            // Use simple leave endpoint
+            const res = await axios.post(`${API_BASE_URL}/api/leave/simple`, leaveData);
+
+            if (res.status === 201) {
+                setSuccess(`Leave submitted successfully for ${user.name} (${user.roll_no})!`);
+                // Reset form
+                setStartDate(null);
+                setEndDate(null);
+                setStartTime('');
+                setEndTime('');
+                setPurpose('');
+                setTimeout(() => setSuccess(''), 5000); // Clear success message after 5 seconds
+            }
         } catch (err) {
-            console.error(err);
-            setError(err.response?.data?.error || err.message || 'Failed to submit leave.');
+            console.error('Leave submission error:', err);
+            setError(err.response?.data?.error || 'Failed to submit leave.');
         } finally {
             setLoading(false);
         }
@@ -117,6 +123,7 @@ const StudentLeave = () => {
 
     return (
         <>
+            <Navbar />
             <div className="main">
                 <div className="leave-form-container">
                     <form className="leave-form" onSubmit={handleSubmit}>
@@ -126,7 +133,7 @@ const StudentLeave = () => {
                         {success && <p className="success-text">{success}</p>}
 
                         <div className="form-row">
-                            <label>Leave Start Date:</label>
+                            <label htmlFor="start-date">Leave Start Date:</label>
                             <button
                                 type="button"
                                 className={`date-select-button ${startDate ? 'is-set' : ''}`}
@@ -137,7 +144,7 @@ const StudentLeave = () => {
                         </div>
 
                         <div className="form-row">
-                            <label>Leave End Date:</label>
+                            <label htmlFor="end-date">Leave End Date:</label>
                             <button
                                 type="button"
                                 className={`date-select-button ${endDate ? 'is-set' : ''}`}
@@ -148,8 +155,9 @@ const StudentLeave = () => {
                         </div>
 
                         <div className="form-row">
-                            <label>Start Time:</label>
+                            <label htmlFor="start-time">Start Time:</label>
                             <input
+                                id="start-time"
                                 type="time"
                                 value={startTime}
                                 onChange={(e) => setStartTime(e.target.value)}
@@ -158,8 +166,9 @@ const StudentLeave = () => {
                         </div>
 
                         <div className="form-row">
-                            <label>End Time:</label>
+                            <label htmlFor="end-time">End Time:</label>
                             <input
+                                id="end-time"
                                 type="time"
                                 value={endTime}
                                 onChange={(e) => setEndTime(e.target.value)}
@@ -168,8 +177,9 @@ const StudentLeave = () => {
                         </div>
 
                         <div className="form-row">
-                            <label>Purpose of Leave:</label>
+                            <label htmlFor="purpose">Purpose of Leave:</label>
                             <textarea
+                                id="purpose"
                                 value={purpose}
                                 onChange={(e) => setPurpose(e.target.value)}
                                 placeholder="e.g., Family function, medical appointment"

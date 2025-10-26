@@ -36,9 +36,7 @@ import hostelRoutes from './routes/hostelRoutes.js';
 import reportsRoutes from './routes/reportsRoutes.js';
 import lostAndFoundRoutes from './routes/lostAndFoundRoutes.js';
 
-console.log('=== REGISTERING /api/auth ROUTES ===');
 app.use('/api/auth', authRoutes);
-console.log('=== AUTH ROUTES REGISTERED ===');
 app.use('/api/rooms', roomRoutes);
 app.use('/api/students', studentRoutes);
 app.use('/api/wardens', wardenRoutes);

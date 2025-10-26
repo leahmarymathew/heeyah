@@ -632,6 +632,7 @@ export default function StudentAttendance() {
 
       if (res.ok) {
         const data = await res.json();
+        
         // Find attendance record for the selected date
         const record = Array.isArray(data) ? data.find(r => {
           const recordDate = new Date(r.date);
@@ -639,7 +640,18 @@ export default function StudentAttendance() {
           const recordDateStr = formatDate(recordDate);
           return recordDateStr === selectedDateStr;
         }) : null;
-        setAttendance(record ? { checkIn: record.in_time, checkOut: record.out_time } : null);
+        
+        // If viewing today and no record exists, create empty attendance object for button logic
+        const today = formatDate(new Date());
+        const selectedDateStr = formatDate(selectedDate);
+        
+        if (selectedDateStr === today && !record) {
+          // For today's date with no record, set empty attendance to enable buttons
+          setAttendance({ checkIn: null, checkOut: null });
+        } else {
+          // For other dates or when record exists, use the found record
+          setAttendance(record ? { checkIn: record.in_time, checkOut: record.out_time } : null);
+        }
       } else if (res.status === 404) {
         setAttendance(null);
       } else throw new Error(`Failed to fetch attendance: ${res.statusText}`);
@@ -691,8 +703,17 @@ export default function StudentAttendance() {
     finally { setMarkingAttendance(false); }
   };
 
-  const canCheckOut = () => { if (!attendance) return true; return !attendance.checkOut; };
-  const canCheckIn = () => { if (!attendance) return false; return !!attendance.checkOut && !attendance.checkIn; };
+  const canCheckOut = () => { 
+    // Can check out if no attendance record or if not already checked out
+    if (!attendance) return true; 
+    return !attendance.checkOut; 
+  };
+  
+  const canCheckIn = () => { 
+    // Can check in if there's an attendance record and already checked out but not checked in
+    if (!attendance) return false; 
+    return !!attendance.checkOut && !attendance.checkIn; 
+  };
 
   // --- DATE WHEEL HANDLERS ---
   useLayoutEffect(() => {

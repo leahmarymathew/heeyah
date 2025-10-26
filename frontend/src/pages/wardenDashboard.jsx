@@ -24,7 +24,7 @@ const WardenDashboard = () => {
               <li>185 residents on leave</li>
               <li>250 residents registered outpass</li>
             </ul>
-            <button className="btnInsights">View Detailed Insights</button>
+
           </div>
 
           <div className="leaves">

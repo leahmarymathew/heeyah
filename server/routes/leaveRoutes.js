@@ -6,7 +6,8 @@ import {
     getAllLeaveRecords, 
     createLeaveRecord,
     updateLeaveStatus,
-    getLatestLeaveRecord
+    getLatestLeaveRecord,
+    createLeaveRecordSimple
 } from '../controllers/leaveController.js';
 
 const router = express.Router();
@@ -15,6 +16,9 @@ const router = express.Router();
 router.get('/my', protectAndFetchProfile, checkRole(['student']), getMyLeaveRecords);
 // Student submits a leave request
 router.post('/create', protectAndFetchProfile, checkRole(['student']), createLeaveRecord);
+
+// Simple leave submission - no heavy authentication
+router.post('/simple', createLeaveRecordSimple);
 
 
 // Warden/Admin routes

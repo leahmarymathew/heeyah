@@ -129,14 +129,7 @@ function Complaint() {
               </div>
             </div>
 
-            <div className="border-t border-white/20 pt-8">
-              <h3 className="text-xl font-semibold mb-2">Lost anything?</h3>
-              <Link to="/lost-and-found">
-                <button className="bg-white text-primary-blue font-bold py-2 px-6 rounded-lg hover:bg-gray-200 transition">
-                  Lost and Found
-                </button>
-              </Link>
-            </div>
+
           </div>
           {/* Decorative Circles */}
           <div className="absolute -bottom-16 -left-16 w-48 h-48 bg-white/10 rounded-full" />

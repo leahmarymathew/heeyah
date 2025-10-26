@@ -53,7 +53,7 @@ export const AuthProvider = ({ children }) => {
                 // Save to localStorage for persistence
                 localStorage.setItem('simpleUser', JSON.stringify(userData));
                 
-                console.log('✅ Simple login successful:', userData);
+
                 return userData;
             } else {
                 throw new Error(response.data.message || 'Login failed');
@@ -71,7 +71,7 @@ export const AuthProvider = ({ children }) => {
     const logout = async () => {
         setUser(null);
         localStorage.removeItem('simpleUser');
-        console.log('✅ Logged out successfully');
+
     };
 
     const value = {

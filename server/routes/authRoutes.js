@@ -7,9 +7,6 @@ import express from 'express';
 import { protectAndFetchProfile } from '../middleware/authMiddleware.js';
 import { findUserProfile, simpleLogin } from '../controllers/authController.js';
 
-console.log('=== AUTH ROUTES LOADED ===');
-console.log('simpleLogin function:', typeof simpleLogin);
-
 const router = express.Router();
 
 // @desc    Simple login - no complex authentication
@@ -21,11 +18,8 @@ router.post('/simple-login', simpleLogin);
 // @route   GET /api/auth/test
 // @access  Public
 router.get('/test', (req, res) => {
-    console.log('=== TEST ENDPOINT CALLED ===');
     res.json({ message: 'Server is working!', timestamp: new Date().toISOString() });
 });
-
-console.log('=== REGISTERING AUTH ROUTES ===');
 
 // @desc    Get the profile of the currently logged-in user
 // @route   GET /api/auth/me
@@ -37,6 +31,5 @@ router.get('/me', protectAndFetchProfile, (req, res) => {
     res.status(200).json(req.user);
 });
 
-console.log('=== EXPORTING AUTH ROUTER ===');
 export default router;
 

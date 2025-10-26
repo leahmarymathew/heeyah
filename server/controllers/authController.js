@@ -62,108 +62,79 @@ export const findUserProfile = async (userId) => {
 };
 
 /**
- * @desc Ultra-simple login - just check if user exists in database tables by email
+ * @desc Ultra-simple login - authenticate with Supabase and get user profile
  * @route POST /api/auth/simple-login
  * @access Public
  */
 export const simpleLogin = async (req, res) => {
-    console.log('=== SIMPLE LOGIN FUNCTION CALLED ===');
     const { email, password } = req.body;
-    console.log('Simple login attempt:', { email, password });
 
-    if (!email) {
+    if (!email || !password) {
         return res.status(400).json({ 
             success: false, 
-            message: 'Email is required' 
+            message: 'Email and password are required' 
         });
     }
 
     try {
-        let userProfile = null;
+        // First try to authenticate with Supabase
+        const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+            email: email,
+            password: password
+        });
 
-        // Super simple approach - create test users if they don't exist
-        // For demo purposes, let's create a test student if email matches pattern
-        if (email === 'student@test.com') {
-            // Check if test student exists
-            const { data: existingStudent } = await supabase
-                .from('student')
-                .select('*')
-                .eq('roll_no', 'TEST-STUDENT')
-                .single();
-
-            if (!existingStudent) {
-                // Create test guardian first
-                await supabase
-                    .from('guardian')
-                    .upsert({
-                        guardian_id: 'TEST-GUARDIAN',
-                        guardian_name: 'Test Guardian',
-                        guardian_relation: 'Father',
-                        guardian_phone: '9876543210'
-                    });
-
-                // Create test student
-                const { data: newStudent, error: insertError } = await supabase
-                    .from('student')
-                    .insert({
-                        roll_no: 'TEST-STUDENT',
-                        user_id: 'test-user-id',
-                        name: 'Test Student',
-                        address: 'Test Address',
-                        phone_no: '1234567890',
-                        gender: 'male',
-                        guardian_id: 'TEST-GUARDIAN',
-                        hostel_id: 1
-                    })
-                    .select()
-                    .single();
-
-                if (!insertError && newStudent) {
-                    userProfile = { ...newStudent, role: 'student', email: email };
-                }
-            } else {
-                userProfile = { ...existingStudent, role: 'student', email: email };
+        if (authError) {
+            console.log('Supabase auth failed:', authError.message);
+            
+            // Fallback to hardcoded test users for development
+            let userProfile = null;
+            if (email === 'student@test.com') {
+                userProfile = {
+                    roll_no: 'TEST-STU',
+                    name: 'Test Student',
+                    email: 'student@test.com',
+                    role: 'student',
+                    phone_no: '1234567890',
+                    address: 'Test Address',
+                    gender: 'Male'
+                };
+            } else if (email === 'warden@test.com') {
+                userProfile = {
+                    warden_id: 'TEST-W',
+                    name: 'Test Warden',
+                    email: 'warden@test.com',
+                    role: 'warden',
+                    phone_no: '1234567890'
+                };
             }
-        }
 
-        // Test warden
-        if (email === 'warden@test.com') {
-            const { data: existingWarden } = await supabase
-                .from('warden')
-                .select('*')
-                .eq('warden_id', 'TEST-WARDEN')
-                .single();
-
-            if (!existingWarden) {
-                const { data: newWarden, error: insertError } = await supabase
-                    .from('warden')
-                    .insert({
-                        warden_id: 'TEST-WARDEN',
-                        user_id: 'test-warden-id',
-                        name: 'Test Warden',
-                        phone_no: '1234567890',
-                        hostel_id: 1
-                    })
-                    .select()
-                    .single();
-
-                if (!insertError && newWarden) {
-                    userProfile = { ...newWarden, role: 'warden', email: email };
-                }
-            } else {
-                userProfile = { ...existingWarden, role: 'warden', email: email };
+            if (!userProfile) {
+                return res.status(401).json({ 
+                    success: false, 
+                    message: 'Invalid email or password. Use student@test.com or warden@test.com for testing.' 
+                });
             }
-        }
 
-        if (!userProfile) {
-            console.log('No user profile found for email:', email);
-            return res.status(404).json({ 
-                success: false, 
-                message: 'User not found. Use student@test.com or warden@test.com for testing.' 
+            return res.status(200).json({
+                success: true,
+                message: 'Login successful (fallback mode)',
+                user: userProfile
             });
         }
 
-        console.log('Login successful for:', userProfile);
+        // If Supabase auth succeeded, get the user profile from database
+        const userId = authData.user.id;
+        const userProfile = await findUserProfile(userId);
+
+        if (!userProfile) {
+            return res.status(404).json({ 
+                success: false, 
+                message: 'User profile not found in database.' 
+            });
+        }
+
+        // Add email to the profile
+        userProfile.email = authData.user.email;
 
         res.status(200).json({
             success: true,

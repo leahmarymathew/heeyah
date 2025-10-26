@@ -11,25 +11,26 @@ const RoomAllocationPage = () => {
     const [rooms, setRooms] = useState([]);
     const [isLoading, setIsLoading] = useState(true); 
     const [selectedRoomId, setSelectedRoomId] = useState(null);
-    const { token } = useContext(AuthContext); // Get auth token
+    const { user } = useContext(AuthContext); // Get user info
 
     useEffect(() => {
         const fetchRooms = async () => {
             setIsLoading(true);
-            if (!token) {
-                console.error("No auth token found");
+            if (!user) {
+                console.error("User not logged in");
                 setIsLoading(false);
                 return;
             }
             
             try {
-                // --- REAL API CALL ---
+                // --- SIMPLE API CALL ---
                 // We pass the filters as query parameters to the backend
-                const response = await axios.get(`http://localhost:3001/api/rooms/layout`, {
-                    headers: { 'Authorization': `Bearer ${token}` },
+                const response = await axios.get(`http://localhost:3001/api/rooms/layout/simple`, {
                     params: {
                         floor: selectedFloor,
-                        search: searchQuery
+                        search: searchQuery,
+                        userRole: user.role,
+                        rollNo: user.roll_no || user.warden_id
                     }
                 });
                 
@@ -52,7 +53,7 @@ const RoomAllocationPage = () => {
         return () => {
             clearTimeout(handler);
         };
-    }, [selectedFloor, searchQuery, token]); // Re-run effect when filters or token change
+    }, [selectedFloor, searchQuery, user]); // Re-run effect when filters or user change
 
     const leftWingRooms = rooms.filter(room => room.wing === 'Left');
     const rightWingRooms = rooms.filter(room => room.wing === 'Right');

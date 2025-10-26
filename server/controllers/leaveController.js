@@ -116,3 +116,60 @@ export const getLatestLeaveRecord = async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 };
+
+// @desc    Simple leave submission - no heavy authentication
+// @route   POST /api/leave/simple
+// @access  Public (minimal auth)
+export const createLeaveRecordSimple = async (req, res) => {
+    const { rollNo, studentName, startDate, endDate, startTime, endTime, purpose } = req.body;
+
+    if (!rollNo || !startDate || !endDate || !startTime || !endTime || !purpose) {
+        return res.status(400).json({ error: 'All fields including roll number are required' });
+    }
+
+    try {
+        // Verify student exists (optional validation)
+        const { data: student, error: studentError } = await supabase
+            .from('student')
+            .select('roll_no, name')
+            .eq('roll_no', rollNo)
+            .single();
+
+        if (studentError) {
+            console.log('Student verification failed:', studentError.message);
+            // Continue anyway - don't block leave submission
+        }
+
+        const { data, error } = await supabase
+            .from('leave_record')
+            .insert([{
+                leave_id: uuidv4(),
+                roll_no: rollNo,
+                leave_start_time: new Date(`${startDate}T${startTime}`),
+                leave_end_time: new Date(`${endDate}T${endTime}`),
+                reason: purpose,
+                approved_by: null,
+                status: 'pending'
+            }])
+            .select();
+
+        if (error) {
+            console.log("Supabase insert error:", error);
+            return res.status(400).json({ error: error.message });
+        }
+
+        if (!data || data.length === 0) {
+            return res.status(500).json({ error: 'Insert failed, no data returned' });
+        }
+
+        res.status(201).json({
+            message: 'Leave submitted successfully!',
+            leave: data[0],
+            student: studentName,
+            rollNo: rollNo
+        });
+    } catch (err) {
+        console.error("Error in simple leave submission:", err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};

@@ -101,6 +101,11 @@ textarea {
     box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
 }
 
+.submit-button:disabled {
+    background-color: #9ca3af;
+    cursor: not-allowed;
+}
+
 /* --- Calendar Modal Styling --- */
 .calendar-modal-backdrop {
     position: fixed;
@@ -122,4 +127,27 @@ textarea {
     border-radius: 12px;
     padding: 10px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* --- Error and Success Messages --- */
+.error-text {
+    color: #dc2626;
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+    text-align: center;
+    padding: 0.5rem;
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 6px;
+}
+
+.success-text {
+    color: #059669;
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+    text-align: center;
+    padding: 0.5rem;
+    background-color: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 6px;
 }

@@ -45,7 +45,7 @@ const Desk = () => (
 const RoomOverlay = ({ roomId, onClose }) => {
     const [roomData, setRoomData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
-    const { token, user } = useContext(AuthContext); 
+    const { user } = useContext(AuthContext); 
     const [selectedBed, setSelectedBed] = useState(null); 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [requestError, setRequestError] = useState('');
@@ -55,18 +55,24 @@ const RoomOverlay = ({ roomId, onClose }) => {
 
     useEffect(() => {
         const fetchData = async () => {
-            if (!roomId || !token) { setIsLoading(false); return; }
+            if (!roomId || !user) { setIsLoading(false); return; }
             setIsLoading(true);
             try {
-                // Fetch room details
-                const roomResponse = await axios.get(`http://localhost:3001/api/rooms/layout/${roomId}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
+                // Fetch room details - use simple endpoint
+                const roomResponse = await axios.get(`http://localhost:3001/api/rooms/layout/simple/${roomId}`, {
+                    params: {
+                        userRole: user.role,
+                        rollNo: user.roll_no || user.warden_id
+                    }
                 });
                 setRoomData(roomResponse.data);
 
-                // Check if student already has allocation
-                const allocationResponse = await axios.get('http://localhost:3001/api/allocate/my-status', {
-                    headers: { 'Authorization': `Bearer ${token}` }
+                // Check if student already has allocation - use simple endpoint
+                const allocationResponse = await axios.get('http://localhost:3001/api/allocate/my-status/simple', {
+                    params: {
+                        rollNo: user.roll_no,
+                        userRole: user.role
+                    }
                 });
                 
                 if (allocationResponse.data.hasAllocation) {
@@ -81,7 +87,7 @@ const RoomOverlay = ({ roomId, onClose }) => {
             }
         };
         fetchData();
-    }, [roomId, token]);
+    }, [roomId, user]);
     
     const handleBedSelect = (bed) => {
         if (hasExistingAllocation) {
@@ -97,7 +103,7 @@ const RoomOverlay = ({ roomId, onClose }) => {
         if (!selectedBed) return;
         
         // Check if user is properly authenticated
-        if (!token) {
+        if (!user) {
             setRequestError('You are not logged in. Please log in and try again.');
             return;
         }
@@ -112,14 +118,17 @@ const RoomOverlay = ({ roomId, onClose }) => {
         setRequestError('');
         setRequestSuccess('');
         
-        console.log('🔐 Submitting request with token:', token?.substring(0, 20) + '...');
-        console.log('📋 Request data:', { room_id: roomId, bed_number: selectedBed });
+        console.log('📋 Request data:', { room_id: roomId, bed_number: selectedBed, user: user.name });
         
         try {
             const response = await axios.post(
-                'http://localhost:3001/api/allocate/request',
-                { room_id: roomId, bed_number: selectedBed },
-                { headers: { Authorization: `Bearer ${token}` } }
+                'http://localhost:3001/api/allocate/request/simple',
+                { 
+                    room_id: roomId, 
+                    bed_number: selectedBed,
+                    rollNo: user.roll_no,
+                    studentName: user.name
+                }
             );
             setRequestSuccess(response.data.message || 'Room allocated successfully!');
             setSelectedBed(null); 
