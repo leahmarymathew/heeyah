@@ -1,5 +1,7 @@
 // src/pages/WardenRoomOverlay.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
+import axios from 'axios';
+import { AuthContext } from '../context/AuthContext';
 import './WardenRoomOverlay.css'; 
 import PersonAtDeskPNG from '../assets/big_9983236 1.png'; 
 import SingleBedPNG from '../assets/single-bed_857707 1.png';
@@ -43,33 +45,120 @@ const Desk = () => (
 
 // --- Main Overlay Component ---
 const WardenRoomOverlay = ({ roomId, onClose }) => {
-    // Mock data based on your image
-    const initialOccupants = {
-        'bed1': { name: 'Suraj S', rollNo: '2023BCY49'}, // Left bed
-        'bed2': { name: 'Swalih', rollNo: '2023BCY49'}, // Top-right bed
-        'bed3': { name: 'Abhi S', rollNo: '2023BCY49'},  // Bottom-right bed
-    };
-    const [occupants, setOccupants] = useState(initialOccupants);
+    const [roomData, setRoomData] = useState(null);
+    const [occupants, setOccupants] = useState({});
+    const [isLoading, setIsLoading] = useState(true);
+    const { token } = useContext(AuthContext);
 
-    const handleRemove = (nameToRemove) => {
-        alert(`Simulating removal of ${nameToRemove}...`);
-        setOccupants(prev => {
-            const updatedOccupants = { ...prev };
-            // Find the bed key associated with the name and set it to null
-            for (const bedKey in updatedOccupants) {
-                if (updatedOccupants[bedKey]?.name === nameToRemove) {
-                    updatedOccupants[bedKey] = null; // Mark as empty, don't delete key
-                    break; 
-                }
+    // Fetch room details when component mounts
+    useEffect(() => {
+        const fetchRoomDetails = async () => {
+            if (!token || !roomId) return;
+            
+            setIsLoading(true);
+            try {
+                const response = await axios.get(`http://localhost:3001/api/rooms/layout/${roomId}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                setRoomData(response.data);
+                
+                // Transform beds data into occupants format
+                const occupantsData = {};
+                response.data.beds.forEach((bed, index) => {
+                    if (bed.occupied) {
+                        occupantsData[`bed${index + 1}`] = {
+                            name: bed.name,
+                            rollNo: bed.rollNo
+                        };
+                    } else {
+                        occupantsData[`bed${index + 1}`] = null;
+                    }
+                });
+                setOccupants(occupantsData);
+                
+            } catch (error) {
+                console.error("Failed to fetch room details:", error);
+            } finally {
+                setIsLoading(false);
             }
-            return updatedOccupants;
-        });
+        };
+
+        fetchRoomDetails();
+    }, [roomId, token]);
+
+    const handleRemove = async (nameToRemove) => {
+        if (!confirm(`Are you sure you want to remove ${nameToRemove} from this room?`)) {
+            return;
+        }
+
+        try {
+            // Find the student's roll number
+            const studentToRemove = Object.values(occupants).find(occupant => 
+                occupant && occupant.name === nameToRemove
+            );
+            
+            if (!studentToRemove) {
+                alert('Student not found');
+                return;
+            }
+
+            // Call API to remove student (we'll create this endpoint)
+            await axios.delete(`http://localhost:3001/api/allocate/remove`, {
+                headers: { 'Authorization': `Bearer ${token}` },
+                data: { 
+                    rollNo: studentToRemove.rollNo,
+                    roomId: roomId 
+                }
+            });
+
+            // Update local state
+            setOccupants(prev => {
+                const updatedOccupants = { ...prev };
+                for (const bedKey in updatedOccupants) {
+                    if (updatedOccupants[bedKey]?.name === nameToRemove) {
+                        updatedOccupants[bedKey] = null;
+                        break; 
+                    }
+                }
+                return updatedOccupants;
+            });
+
+            alert(`${nameToRemove} has been removed from the room successfully.`);
+            
+        } catch (error) {
+            console.error("Failed to remove student:", error);
+            alert('Failed to remove student. Please try again.');
+        }
     };
+
+    if (isLoading) {
+        return (
+            <div className="warden-overlay-backdrop" onClick={onClose}>
+                <div className="warden-overlay-modal" onClick={e => e.stopPropagation()}>
+                    <span className="warden-overlay-close" onClick={onClose}>&times;</span>
+                    <div className="loading-message">Loading room details...</div>
+                </div>
+            </div>
+        );
+    }
+
+    if (!roomData) {
+        return (
+            <div className="warden-overlay-backdrop" onClick={onClose}>
+                <div className="warden-overlay-modal" onClick={e => e.stopPropagation()}>
+                    <span className="warden-overlay-close" onClick={onClose}>&times;</span>
+                    <div className="error-message">Failed to load room details.</div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="warden-overlay-backdrop" onClick={onClose}>
             <div className="warden-overlay-modal" onClick={e => e.stopPropagation()}>
                 <span className="warden-overlay-close" onClick={onClose}>&times;</span>
+                <h3 className="room-title">Room {roomData.roomName}</h3>
                 
                 {/* --- Grid Layout --- */}
                 <div className="warden-room-layout-grid">

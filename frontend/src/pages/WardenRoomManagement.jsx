@@ -1,5 +1,8 @@
 // src/pages/WardenRoomManagement.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
+import axios from 'axios';
+import { AuthContext } from '../context/AuthContext';
+import WardenLayout from '../components/WardenLayout';
 import WardenRoomOverlay from './WardenRoomOverlay'; // IMPORT THE NEW WARDEN OVERLAY
 import './RoomAllocation.css'; // Reusing the same CSS as the allocation page
 
@@ -9,27 +12,32 @@ const WardenRoomManagement = () => {
     const [rooms, setRooms] = useState([]);
     const [isLoading, setIsLoading] = useState(true); 
     const [selectedRoomId, setSelectedRoomId] = useState(null);
+    const { token } = useContext(AuthContext); // Get auth token
 
     useEffect(() => {
         const fetchRooms = async () => {
             setIsLoading(true);
+            if (!token) {
+                console.error("No auth token found");
+                setIsLoading(false);
+                return;
+            }
+            
             try {
-                // Mock Data for demonstration
-                const mockRooms = [
-                    { id: 'BAA101', wing: 'Left', status: 'Reserved' },
-                    { id: 'BAA102', wing: 'Left', status: 'Available' },
-                    { id: 'BAA103', wing: 'Left', status: 'Partial' },
-                    { id: 'BAB101', wing: 'Right', status: 'Available' },
-                    { id: 'BAB102', wing: 'Right', status: 'Reserved' },
-                    { id: 'BAB103', wing: 'Right', status: 'Available' },
-                ];
+                // --- REAL API CALL ---
+                // We pass the filters as query parameters to the backend
+                const response = await axios.get(`http://localhost:3001/api/rooms/layout`, {
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    params: {
+                        floor: selectedFloor,
+                        search: searchQuery
+                    }
+                });
                 
-                const filteredRooms = mockRooms
-                    .filter(room => room.id.includes(selectedFloor)) 
-                    .filter(room => room.id.toLowerCase().includes(searchQuery.toLowerCase()));
+                // The backend returns data in the format we need
+                setRooms(response.data);
+                // ---------------------
 
-                await new Promise(resolve => setTimeout(resolve, 300)); 
-                setRooms(filteredRooms);
             } catch (error) {
                 console.error("Failed to fetch rooms:", error);
             } finally {
@@ -37,6 +45,7 @@ const WardenRoomManagement = () => {
             }
         };
 
+        // Debounce the fetch call to avoid spamming the API on every key press
         const handler = setTimeout(() => {
             fetchRooms();
         }, 300); 
@@ -44,7 +53,7 @@ const WardenRoomManagement = () => {
         return () => {
             clearTimeout(handler);
         };
-    }, [selectedFloor, searchQuery]); 
+    }, [selectedFloor, searchQuery, token]); // Re-run effect when filters or token change 
 
     const leftWingRooms = rooms.filter(room => room.wing === 'Left');
     const rightWingRooms = rooms.filter(room => room.wing === 'Right');
@@ -57,12 +66,11 @@ const WardenRoomManagement = () => {
     };
 
     const handleRoomClick = (roomId) => {
-        // Force the ID to 'BAA103' to display the mock data in the overlay
-        setSelectedRoomId('BAA103'); 
+        setSelectedRoomId(roomId); 
     };
     
     return (
-        <>
+        <WardenLayout>
             <div className="help">
                 <div className="help-info">
                     <div className="circle reserved"></div>
@@ -144,7 +152,7 @@ const WardenRoomManagement = () => {
             
             {/* RENDER THE NEW WARDEN OVERLAY */}
             {selectedRoomId && <WardenRoomOverlay roomId={selectedRoomId} onClose={() => setSelectedRoomId(null)} />}
-        </>
+        </WardenLayout>
     );
 };
 

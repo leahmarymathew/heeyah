@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '../supabase';
+import axios from 'axios';
 
 // Create the context
 export const AuthContext = createContext(null);
@@ -12,86 +14,104 @@ export const useAuth = () => {
     return context;
 };
 
-// This is a continuation of the AuthProvider
-// (This code block is not a complete file)
-
 export const AuthProvider = ({ children }) => {
     const [token, setToken] = useState(null);
-    const [user, setUser] = useState(null); // This will hold the full profile
+    const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Check for existing session in localStorage
-        const initializeSession = () => {
-            const savedUser = localStorage.getItem('mockUser');
-            const savedToken = localStorage.getItem('mockToken');
-            
-            if (savedUser && savedToken) {
-                setUser(JSON.parse(savedUser));
-                setToken(savedToken);
-                console.log('✅ Session restored from localStorage');
+        // Check for existing session
+        const initializeSession = async () => {
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                
+                if (session?.access_token) {
+                    setToken(session.access_token);
+                    
+                    // Fetch user profile from backend
+                    const response = await axios.get('http://localhost:3001/api/auth/me', {
+                        headers: { 'Authorization': `Bearer ${session.access_token}` }
+                    });
+                    
+                    setUser(response.data);
+                    console.log('✅ Session restored:', response.data);
+                }
+            } catch (error) {
+                console.error('Session initialization failed:', error);
+            } finally {
+                setLoading(false);
             }
-            setLoading(false);
         };
 
         initializeSession();
+
+        // Listen for auth changes
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+            if (event === 'SIGNED_IN' && session?.access_token) {
+                setToken(session.access_token);
+                
+                try {
+                    const response = await axios.get('http://localhost:3001/api/auth/me', {
+                        headers: { 'Authorization': `Bearer ${session.access_token}` }
+                    });
+                    setUser(response.data);
+                } catch (error) {
+                    console.error('Failed to fetch user profile:', error);
+                }
+            } else if (event === 'SIGNED_OUT') {
+                setToken(null);
+                setUser(null);
+            }
+        });
+
+        return () => subscription.unsubscribe();
     }, []);
 
-    // ... (login and logout functions to follow) ...
-        // ... (state and useEffect from Part 2) ...
-
-    // Simple mock login function for development
     const login = async (email, password) => {
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 500));
-
-        // Mock validation - accept any password for development
         if (!email || !password) {
             throw new Error('Email and password are required');
         }
 
-        console.log('✅ Mock login successful');
-        console.log('Email:', email);
+        try {
+            // Authenticate with Supabase
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: email,
+                password: password
+            });
 
-        // Determine role based on email pattern
-        let role = 'student'; // default
-        if (email.includes('warden')) {
-            role = 'warden';
-        } else if (email.includes('admin')) {
-            role = 'admin';
-        } else if (email.includes('caretaker')) {
-            role = 'caretaker';
+            if (error) throw error;
+
+            if (!data.session?.access_token) {
+                throw new Error('No access token received');
+            }
+
+            setToken(data.session.access_token);
+
+            // Fetch user profile from backend
+            const response = await axios.get('http://localhost:3001/api/auth/me', {
+                headers: { 'Authorization': `Bearer ${data.session.access_token}` }
+            });
+
+            setUser(response.data);
+            console.log('✅ Login successful:', response.data);
+
+            return response.data;
+
+        } catch (error) {
+            console.error('Login failed:', error);
+            throw new Error(error.message || 'Login failed. Please check your credentials.');
         }
-
-        // Create user profile from email
-        const userProfile = {
-            user_id: 'mock-' + Date.now(),
-            email: email,
-            name: email.split('@')[0],
-            role: role,
-            roll_no: role === 'student' ? 'STU001' : null
-        };
-
-        console.log('✅ Created user profile:', userProfile);
-
-        // Save to localStorage for persistence
-        localStorage.setItem('mockUser', JSON.stringify(userProfile));
-        localStorage.setItem('mockToken', 'mock-token-' + Date.now());
-
-        setUser(userProfile);
-        setToken('mock-token-' + Date.now());
-
-        return userProfile;
     };
 
     const logout = async () => {
         setLoading(true);
         
-        // Clear localStorage
-        localStorage.removeItem('mockUser');
-        localStorage.removeItem('mockToken');
+        try {
+            await supabase.auth.signOut();
+        } catch (error) {
+            console.error('Logout error:', error);
+        }
         
-        // Clear state
         setToken(null);
         setUser(null);
         setLoading(false);
@@ -99,19 +119,18 @@ export const AuthProvider = ({ children }) => {
         console.log('✅ Logged out successfully');
     };
 
-    // This is the value that all components in your app can access
     const value = {
         token,
         user,
         loading,
-        login, // Expose the new login function
+        login,
         logout,
-        isAuthenticated: !!token // True if a token exists
+        isAuthenticated: !!token
     };
 
     return (
         <AuthContext.Provider value={value}>
-            {!loading && children} {/* Render children only when auth check is complete */}
+            {!loading && children}
         </AuthContext.Provider>
     );
 };

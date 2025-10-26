@@ -14,6 +14,7 @@ import WardenComplaint from './pages/warden/WardenComplaint'
 import StudentLeave from './pages/student/StudentLeave.jsx';
 
 import WardenDashboard from './pages/wardenDashboard';
+import WardenRoomManagement from './pages/WardenRoomManagement';
 
 import RoomAllocationPage from './pages/roomAllocation.jsx';
 import RoleBasedRedirect from './components/RoleBasedRedirect.jsx';
@@ -27,6 +28,7 @@ function App() {
       
       {/* --- Warden Routes (separate layout) --- */}
       <Route path="/warden-dashboard" element={<ProtectedRoute><WardenDashboard /></ProtectedRoute>} />
+      <Route path="/warden-room-management" element={<ProtectedRoute><WardenRoomManagement /></ProtectedRoute>} />
       
       {/* --- Protected Routes with Student/Admin Layout --- */}
       <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
