@@ -58,166 +58,210 @@
 
 // export default WardenComplaint;
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
-import WardenLayout from '../../components/WardenLayout';
-import back from "../../assets/Arrow 1.png";
+import { supabase } from '../../supabase';
 import "./WardenComplaint.css";
 
 function WardenComplaint() {
   const navigate = useNavigate();
-  
-  // Mock data for demonstration
-  const [complaints, setComplaints] = useState([
-    {
-      id: 1,
-      name: "Abhishek R",
-      rollNo: "2023BCY0049",
-      room: "301",
-      complaintType: "Electrical",
-      complaintDetails: "Fan is not working. It was making a loud noise and then stopped.",
-      status: "pending"
-    },
-    {
-      id: 2,
-      name: "Priya Sharma",
-      rollNo: "2022BME0012",
-      room: "105",
-      complaintType: "Plumbing",
-      complaintDetails: "The shower tap is broken and leaking continuously.",
-      status: "in-progress"
-    },
-    {
-      id: 3,
-      name: "Karan Singh",
-      rollNo: "2024BEE0088",
-      room: "212",
-      complaintType: "Carpentry",
-      complaintDetails: "My study table chair is broken. One of the legs is loose.",
-      status: "resolved"
-    },
-    {
-      id: 4,
-      name: "Anjali Mehta",
-      rollNo: "2023BCS0150",
-      room: "404",
-      complaintType: "Internet/Wi-Fi",
-      complaintDetails: "The Wi-Fi signal is very weak in my room. The LAN port is also not working.",
-      status: "in-progress"
-    },
-    {
-      id: 5,
-      name: "Rohan Verma",
-      rollNo: "2022BCE0031",
-      room: "G07",
-      complaintType: "Housekeeping",
-      complaintDetails: "Room hasn't been cleaned for two days. The dustbin is full.",
-      status: "pending"
-    },
-    {
-      id: 6,
-      name: "Aisha Begum",
-      rollNo: "2025BAR0005",
-      room: "110",
-      complaintType: "Electrical",
-      complaintDetails: "The main tube light is flickering constantly.",
-      status: "resolved"
+  const [requests, setRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    fetchRequests();
+  }, []);
+
+  const fetchRequests = async () => {
+    try {
+      setLoading(true);
+      
+      const { data, error } = await supabase
+        .from('request')
+        .select(`
+          *,
+          student ( name, roll_no )
+        `)
+        .order('request_date', { ascending: false });
+
+      if (error) {
+        console.error('Supabase error:', error);
+        setError('Failed to fetch requests');
+      } else {
+        console.log('Request records data:', data);
+        setRequests(data || []);
+      }
+    } catch (err) {
+      console.error('Error fetching requests:', err);
+      setError('Failed to fetch requests');
+    } finally {
+      setLoading(false);
     }
-  ]);
+  };
 
   const handleBack = () => {
     navigate('/warden-dashboard');
   };
 
-  const handleUpdateStatus = (id, newStatus) => {
-    setComplaints(prev => 
-      prev.map(complaint => 
-        complaint.id === id ? { ...complaint, status: newStatus } : complaint
-      )
-    );
+  const handleUpdateStatus = async (requestId, newStatus) => {
+    try {
+      const { error } = await supabase
+        .from('request')
+        .update({ status: newStatus })
+        .eq('request_id', requestId);
+
+      if (error) {
+        console.error('Error updating status:', error);
+        return;
+      }
+
+      // Update local state
+      setRequests(prev => 
+        prev.map(request => 
+          request.request_id === requestId ? { ...request, status: newStatus } : request
+        )
+      );
+    } catch (err) {
+      console.error('Error updating request status:', err);
+    }
   };
 
-  return (
-    <WardenLayout>
-      <div className="warden-complaint-main">
-        <div className="warden-complaint-header">
-          <button type="button" className="back-button" onClick={handleBack}>
-            <img src={back} alt="Back" width="24px" />
-            <span>Back to Dashboard</span>
-          </button>
-          <h1 className="page-title">Hostel Complaints</h1>
-        </div>
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-GB');
+  };
 
-        <div className="warden-complaint-container">
-          <div className="table-container">
-            <table className="complaint-table">
-              <thead>
-                <tr>
-                  <th>Student</th>
-                  <th>Room</th>
-                  <th>Complaint Details</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {complaints.map((complaint) => (
-                  <tr key={complaint.id}>
-                    <td className="student-cell">
-                      <div className="student-info">
-                        <strong>{complaint.name}</strong>
-                        <span className="roll-no">{complaint.rollNo}</span>
-                      </div>
-                    </td>
-                    <td className="room-cell">
-                      <span className="room-number">{complaint.room}</span>
-                    </td>
-                    <td className="details-cell">
-                      <div className="complaint-details">
-                        <strong className="complaint-type">{complaint.complaintType}:</strong>
-                        <p className="complaint-description">{complaint.complaintDetails}</p>
-                      </div>
-                    </td>
-                    <td className="status-cell">
-                      <span className={`status-badge status-${complaint.status}`}>
-                        {complaint.status.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                      </span>
-                    </td>
-                    <td className="actions-cell">
-                      {complaint.status === 'pending' ? (
-                        <div className="action-buttons">
-                          <button 
-                            className="assign-btn"
-                            onClick={() => handleUpdateStatus(complaint.id, 'in-progress')}
-                          >
-                            Assign
-                          </button>
-                          <button 
-                            className="resolve-btn"
-                            onClick={() => handleUpdateStatus(complaint.id, 'resolved')}
-                          >
-                            Resolve
-                          </button>
-                        </div>
-                      ) : complaint.status === 'in-progress' ? (
-                        <button 
-                          className="resolve-btn"
-                          onClick={() => handleUpdateStatus(complaint.id, 'resolved')}
-                        >
-                          Mark Resolved
-                        </button>
-                      ) : (
-                        <span className="final-status">Completed</span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+  if (loading) {
+    return (
+      <div className="complaint-page">
+        <div className="complaint-header">
+          <button className="back-button" onClick={handleBack}>
+            ← Back
+          </button>
+          <h1 className="page-title">Student Requests</h1>
+        </div>
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <p>Loading requests...</p>
         </div>
       </div>
-    </WardenLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="complaint-page">
+        <div className="complaint-header">
+          <button className="back-button" onClick={handleBack}>
+            ← Back
+          </button>
+          <h1 className="page-title">Student Requests</h1>
+        </div>
+        <div className="error-container">
+          <p className="error-message">{error}</p>
+          <button className="retry-button" onClick={fetchRequests}>
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="complaint-page">
+      <div className="complaint-header">
+        <button className="back-button" onClick={handleBack}>
+          ← Back
+        </button>
+        <h1 className="page-title">Student Requests</h1>
+      </div>
+
+      <div className="complaint-content">
+        {requests.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-icon">📋</div>
+            <h3>No Requests Found</h3>
+            <p>There are currently no student requests to display.</p>
+          </div>
+        ) : (
+          <div className="complaint-table-container">
+            <div className="table-wrapper">
+              <table className="complaint-table">
+                <thead>
+                  <tr>
+                    <th style={{width: '20%', minWidth: '180px'}}>Student</th>
+                    <th style={{width: '15%', minWidth: '120px'}}>Request Date</th>
+                    <th style={{width: '40%', minWidth: '300px'}}>Request Details</th>
+                    <th style={{width: '15%', minWidth: '120px'}}>Status</th>
+                    <th style={{width: '10%', minWidth: '100px'}}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {requests.map((request, index) => (
+                    <tr key={request.request_id || index}>
+                      <td style={{width: '20%', minWidth: '180px', padding: '16px', verticalAlign: 'top', borderRight: '1px solid #f0f0f0'}}>
+                        <div style={{display: 'flex', flexDirection: 'column', gap: '4px'}}>
+                          <div style={{fontWeight: 'bold', fontSize: '16px', color: '#333'}}>
+                            {request.student?.name || 'Unknown Student'}
+                          </div>
+                          <div style={{fontSize: '14px', color: '#666', fontFamily: 'monospace'}}>
+                            {request.student?.roll_no || request.roll_no}
+                          </div>
+                        </div>
+                      </td>
+                      <td style={{width: '15%', minWidth: '120px', padding: '16px', textAlign: 'center', verticalAlign: 'top', borderRight: '1px solid #f0f0f0'}}>
+                        <div style={{fontSize: '14px', color: '#333'}}>
+                          {formatDate(request.request_date)}
+                        </div>
+                      </td>
+                      <td style={{width: '40%', minWidth: '300px', padding: '16px', verticalAlign: 'top', borderRight: '1px solid #f0f0f0'}}>
+                        <div style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
+                          <div style={{fontWeight: 'bold', color: '#333', fontSize: '14px'}}>
+                            {request.request_type || 'General Request'}:
+                          </div>
+                          <div style={{color: '#666', fontSize: '14px', lineHeight: '1.4'}}>
+                            {request.description || 'No description provided'}
+                          </div>
+                        </div>
+                      </td>
+                      <td style={{width: '15%', minWidth: '120px', padding: '16px', textAlign: 'center', verticalAlign: 'top', borderRight: '1px solid #f0f0f0'}}>
+                        <span className={`status-badge status-${request.status}`}>
+                          {request.status ? request.status.charAt(0).toUpperCase() + request.status.slice(1) : 'Pending'}
+                        </span>
+                      </td>
+                      <td style={{width: '10%', minWidth: '100px', padding: '16px', verticalAlign: 'top'}}>
+                        {request.status === 'pending' ? (
+                          <div className="action-buttons">
+                            <button 
+                              className="resolve-btn"
+                              onClick={() => handleUpdateStatus(request.request_id, 'approved')}
+                            >
+                              Approve
+                            </button>
+                            <button 
+                              className="reject-btn"
+                              onClick={() => handleUpdateStatus(request.request_id, 'rejected')}
+                            >
+                              Reject
+                            </button>
+                          </div>
+                        ) : (
+                          <span className="final-status">
+                            {request.status === 'approved' ? 'Approved' : 'Rejected'}
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
 

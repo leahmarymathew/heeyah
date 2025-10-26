@@ -196,10 +196,6 @@ const RoomOverlay = ({ roomId, onClose }) => {
                 <div className="room-layout-grid">
                     {/* Balcony Section */}
                     <div className="layout-label">Balcony</div>
-                    <div className="door-section">
-                        <div className="door-text">Balcony Door</div>
-                        <div className="layout-line"></div>
-                    </div>
 
                     {/* Main Room Content */}
                     <div className="main-content-area">
@@ -241,11 +237,7 @@ const RoomOverlay = ({ roomId, onClose }) => {
                     </div>
 
                     {/* Exit Section */}
-                    <div className="layout-label">Entrance/Exit Door</div>
-                    <div className="door-section">
-                        <div className="door-text">Corridor</div>
-                        <div className="layout-line"></div>
-                    </div>
+                    <div className="layout-label">Corridor</div>
                 </div>
                 
                 {/* Request Section */}

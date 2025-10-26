@@ -17,9 +17,11 @@
 .warden-overlay-modal {
     background-color: #dbe2ff; /* Light purple-blue from image */
     border-radius: 12px;
-    padding: 40px 20px 20px 20px;
-    width: 90%;
-    max-width: 800px;
+    padding: 30px 15px 15px 15px;
+    width: 85%;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
     position: relative;
     box-shadow: 0 5px 15px rgba(0,0,0,0.3);
 }
@@ -38,33 +40,31 @@
 /* --- New Grid Layout --- */
 .warden-room-layout-grid {
     display: grid;
-    /* 6 rows defined for header, door, content, storage, footer label, footer line */
-    grid-template-rows: auto auto 1fr auto auto auto; 
+    /* 4 rows defined for header, content, storage, footer label */
+    grid-template-rows: auto 1fr auto auto; 
     gap: 15px;
     width: 100%;
     justify-items: center; /* Center items horizontally within grid cells */
 }
 
 /* --- Row Span & Positioning --- */
-.layout-label, .layout-line, .main-content-area, .storage-area {
+.layout-label, .main-content-area, .storage-area {
     grid-column: 1 / -1; /* Make these elements span full width */
 }
 
 .balcony-label { grid-row: 1; }
-.balcony-door { grid-row: 2; }
 .main-content-area { 
-    grid-row: 3; 
+    grid-row: 2; 
     display: grid; 
     /* 3 columns for left bed, desks, right beds */
     grid-template-columns: 1fr 1fr 1fr; 
-    gap: 20px; 
+    gap: 15px; 
     align-items: center; /* Vertically align items in the middle row */
     width: 100%; 
-    padding: 20px 0;
+    padding: 15px 0;
 }
-.storage-area { grid-row: 4; }
-.exit-label { grid-row: 5; margin-top: 10px; }
-.exit-door { grid-row: 6; }
+.storage-area { grid-row: 3; }
+.exit-label { grid-row: 4; margin-top: 10px; }
 
 /* --- Column Content Alignment --- */
 .left-bed-area {
@@ -89,7 +89,7 @@
 }
 
 
-/* --- Labels & Lines --- */
+/* --- Labels --- */
 .layout-label {
     text-align: center;
     font-weight: bold;
@@ -97,23 +97,12 @@
     margin: 0;
     color: #333;
 }
-.layout-line {
-    width: 120px; 
-    height: 4px;
-    border-top: 3px solid #333;
-    text-align: center;
-    line-height: 0; /* Important for centering text on the line */
-    font-size: 10px;
-    color: #333;
-    font-weight: 500;
-    margin: 5px auto 15px auto; /* Center the line itself */
-}
 
 
 /* --- Components --- */
 .desk-container {
-    width: 100px;
-    height: 80px;
+    width: 70px;
+    height: 60px;
 }
 .desk-container img {
     width: 100%;
@@ -130,12 +119,12 @@
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 .bed-container.vertical {
-    width: 120px;
-    height: 190px;
+    width: 90px;
+    height: 140px;
 }
 .bed-container.horizontal {
-    width: 190px;
-    height: 120px;
+    width: 140px;
+    height: 90px;
 }
 /* Style for empty beds */
 .bed-container.empty {
@@ -239,8 +228,8 @@
 }
 
 .cupboard {
-    width: 140px;
-    height: 60px;
+    width: 100px;
+    height: 40px;
     background-color: #f0f0f0;
     border: 2px solid #666;
     border-radius: 4px;
@@ -248,5 +237,88 @@
     justify-content: center;
     align-items: center;
     font-weight: 600;
-    font-size: 12px;
+    font-size: 11px;
+}
+
+/* Mobile responsive styles */
+@media (max-width: 768px) {
+    .warden-overlay-modal {
+        width: 95%;
+        max-width: 500px;
+        padding: 25px 10px 10px 10px;
+    }
+    
+    .main-content-area {
+        gap: 10px;
+        padding: 10px 0;
+    }
+    
+    .desk-container {
+        width: 50px;
+        height: 40px;
+    }
+    
+    .bed-container.vertical {
+        width: 70px;
+        height: 110px;
+    }
+    
+    .bed-container.horizontal {
+        width: 110px;
+        height: 70px;
+    }
+    
+    .cupboard {
+        width: 80px;
+        height: 35px;
+        font-size: 10px;
+    }
+    
+    .student-info {
+        font-size: 11px;
+    }
+    
+    .student-info strong {
+        font-size: 12px;
+    }
+    
+    .layout-label {
+        font-size: 12px;
+    }
+    
+    .room-title {
+        font-size: 18px;
+    }
+}
+
+@media (max-width: 480px) {
+    .warden-overlay-modal {
+        width: 98%;
+        max-width: 400px;
+    }
+    
+    .main-content-area {
+        gap: 8px;
+    }
+    
+    .desk-container {
+        width: 40px;
+        height: 35px;
+    }
+    
+    .bed-container.vertical {
+        width: 60px;
+        height: 90px;
+    }
+    
+    .bed-container.horizontal {
+        width: 90px;
+        height: 60px;
+    }
+    
+    .cupboard {
+        width: 70px;
+        height: 30px;
+        font-size: 9px;
+    }
 }

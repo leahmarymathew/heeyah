@@ -1,7 +1,6 @@
 // src/pages/WardenRoomOverlay.jsx
-import React, { useState, useEffect, useContext } from 'react';
-import axios from 'axios';
-import { AuthContext } from '../context/AuthContext';
+import { useState, useEffect } from 'react';
+import { supabase } from '../supabase';
 import './WardenRoomOverlay.css'; 
 import PersonAtDeskPNG from '../assets/big_9983236 1.png'; 
 import SingleBedPNG from '../assets/single-bed_857707 1.png';
@@ -48,25 +47,71 @@ const WardenRoomOverlay = ({ roomId, onClose }) => {
     const [roomData, setRoomData] = useState(null);
     const [occupants, setOccupants] = useState({});
     const [isLoading, setIsLoading] = useState(true);
-    const { token } = useContext(AuthContext);
 
     // Fetch room details when component mounts
     useEffect(() => {
         const fetchRoomDetails = async () => {
-            if (!token || !roomId) return;
+            if (!roomId) return;
             
             setIsLoading(true);
             try {
-                const response = await axios.get(`http://localhost:3001/api/rooms/layout/${roomId}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
+                // Get room info
+                const { data: room, error: roomError } = await supabase
+                    .from('room')
+                    .select('room_id, room_number, type, capacity')
+                    .eq('room_number', roomId)
+                    .single();
+
+                if (roomError) {
+                    console.error(`Room not found for room_number: ${roomId}`, roomError.message);
+                    return;
+                }
+
+                // Get room allocations with student info
+                const { data: allocations, error: allocError } = await supabase
+                    .from('room_alloc')
+                    .select('student ( name, roll_no )')
+                    .eq('room_id', room.room_id)
+                    .eq('status', 'approved');
+
+                if (allocError) {
+                    console.error('Error fetching allocations:', allocError);
+                }
+
+                // Create beds array
+                const beds = [];
+                const capacity = room.capacity || 3;
                 
-                setRoomData(response.data);
+                for (let i = 0; i < (allocations || []).length; i++) {
+                    beds.push({
+                        id: i + 1,
+                        occupied: true,
+                        name: allocations[i].student.name,
+                        rollNo: allocations[i].student.roll_no
+                    });
+                }
+                
+                while (beds.length < capacity) {
+                    beds.push({
+                        id: beds.length + 1,
+                        occupied: false,
+                        name: 'Free space',
+                        rollNo: null
+                    });
+                }
+
+                const roomDetails = {
+                    roomName: room.room_number,
+                    capacity: capacity,
+                    beds: beds
+                };
+
+                setRoomData(roomDetails);
                 
                 // Transform beds data into occupants format
                 const occupantsData = {};
-                response.data.beds.forEach((bed, index) => {
-                    if (bed.occupied) {
+                roomDetails.beds.forEach((bed, index) => {
+                    if (bed.occupied && bed.name !== 'Free space') {
                         occupantsData[`bed${index + 1}`] = {
                             name: bed.name,
                             rollNo: bed.rollNo
@@ -85,7 +130,7 @@ const WardenRoomOverlay = ({ roomId, onClose }) => {
         };
 
         fetchRoomDetails();
-    }, [roomId, token]);
+    }, [roomId]);
 
     const handleRemove = async (nameToRemove) => {
         if (!confirm(`Are you sure you want to remove ${nameToRemove} from this room?`)) {
@@ -103,14 +148,17 @@ const WardenRoomOverlay = ({ roomId, onClose }) => {
                 return;
             }
 
-            // Call API to remove student (we'll create this endpoint)
-            await axios.delete(`http://localhost:3001/api/allocate/remove`, {
-                headers: { 'Authorization': `Bearer ${token}` },
-                data: { 
-                    rollNo: studentToRemove.rollNo,
-                    roomId: roomId 
-                }
-            });
+            // Remove student from room_alloc table
+            const { error } = await supabase
+                .from('room_alloc')
+                .delete()
+                .eq('roll_no', studentToRemove.rollNo);
+
+            if (error) {
+                console.error('Error removing student:', error);
+                alert('Failed to remove student. Please try again.');
+                return;
+            }
 
             // Update local state
             setOccupants(prev => {
@@ -164,11 +212,8 @@ const WardenRoomOverlay = ({ roomId, onClose }) => {
                 <div className="warden-room-layout-grid">
                     {/* Row 1: Balcony Label */}
                     <div className="layout-label balcony-label">Balcony</div>
-                    
-                    {/* Row 2: Balcony Door */}
-                    <div className="layout-line balcony-door">Balcony Door</div>
 
-                    {/* Row 3: Main Content Area */}
+                    {/* Row 2: Main Content Area */}
                     <div className="main-content-area">
                         {/* Column 1: Left Bed */}
                         <div className="left-bed-area">
@@ -201,17 +246,14 @@ const WardenRoomOverlay = ({ roomId, onClose }) => {
                         </div>
                     </div>
 
-                    {/* Row 4: Cupboards */}
+                    {/* Row 3: Cupboards */}
                     <div className="storage-area">
                         <div className="cupboard">Cupboard 1</div>
                         <div className="cupboard">Cupboard 2</div>
                     </div>
 
-                    {/* Row 5: Exit Door Label */}
-                    <div className="layout-label exit-label">Entrance/Exit Door</div>
-                    
-                    {/* Row 6: Exit Door Line */}
-                    <div className="layout-line exit-door">Corridor</div>
+                    {/* Row 4: Exit Door Label */}
+                    <div className="layout-label exit-label">Corridor</div>
                 </div>
             </div>
         </div>

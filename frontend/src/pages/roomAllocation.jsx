@@ -92,7 +92,7 @@ const RoomAllocationPage = () => {
                     <div className="filter">
                         <input 
                             type="text" 
-                            placeholder="Example: 'BAA101'"  
+                            placeholder="Example: 'THL101'"  
                             value={searchQuery} 
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />

@@ -1,42 +1,73 @@
 // src/pages/WardenRoomManagement.jsx
-import React, { useState, useEffect, useContext } from 'react';
-import axios from 'axios';
-import { AuthContext } from '../context/AuthContext';
-import WardenLayout from '../components/WardenLayout';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '../supabase';
 import WardenRoomOverlay from './WardenRoomOverlay'; // IMPORT THE NEW WARDEN OVERLAY
 import './RoomAllocation.css'; // Reusing the same CSS as the allocation page
+import './WardenRoomManagement.css'; // Header styles
 
 const WardenRoomManagement = () => {
+    const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedFloor, setSelectedFloor] = useState('1');
     const [rooms, setRooms] = useState([]);
-    const [isLoading, setIsLoading] = useState(true); 
+    const [isLoading, setIsLoading] = useState(true);
     const [selectedRoomId, setSelectedRoomId] = useState(null);
-    const { token } = useContext(AuthContext); // Get auth token
+
+    const handleBack = () => {
+        navigate('/warden-dashboard');
+    };
 
     useEffect(() => {
         const fetchRooms = async () => {
             setIsLoading(true);
-            if (!token) {
-                console.error("No auth token found");
-                setIsLoading(false);
-                return;
-            }
-            
+
             try {
-                // --- REAL API CALL ---
-                // We pass the filters as query parameters to the backend
-                const response = await axios.get(`http://localhost:3001/api/rooms/layout`, {
-                    headers: { 'Authorization': `Bearer ${token}` },
-                    params: {
-                        floor: selectedFloor,
-                        search: searchQuery
+                // Fetch rooms from the database
+                let roomQuery = supabase
+                    .from('room')
+                    .select('room_id, room_number, floor, hostel_wing, capacity')
+                    .eq('floor', selectedFloor);
+
+                if (searchQuery) {
+                    roomQuery = roomQuery.ilike('room_number', `%${searchQuery}%`);
+                }
+
+                const { data: roomsData, error: roomError } = await roomQuery;
+                if (roomError) throw roomError;
+
+                // Fetch room allocations
+                const { data: allocations, error: allocError } = await supabase
+                    .from('room_alloc')
+                    .select('room_id, roll_no, status')
+                    .in('status', ['approved', 'pending']);
+
+                if (allocError) throw allocError;
+
+                // Transform rooms data to match the expected format
+                const transformedRooms = (roomsData || []).map(room => {
+                    const wing = room.hostel_wing || 'Left';
+                    const roomAllocations = (allocations || []).filter(a => a.room_id === room.room_id);
+                    const allocationCount = roomAllocations.length;
+                    const capacity = room.capacity || 3;
+
+                    let status;
+                    if (allocationCount === 0) {
+                        status = 'Available';
+                    } else if (allocationCount >= capacity) {
+                        status = 'Reserved';
+                    } else {
+                        status = 'Partial';
                     }
+
+                    return {
+                        id: room.room_number,
+                        status: status,
+                        wing: wing
+                    };
                 });
-                
-                // The backend returns data in the format we need
-                setRooms(response.data);
-                // ---------------------
+
+                setRooms(transformedRooms);
 
             } catch (error) {
                 console.error("Failed to fetch rooms:", error);
@@ -48,16 +79,16 @@ const WardenRoomManagement = () => {
         // Debounce the fetch call to avoid spamming the API on every key press
         const handler = setTimeout(() => {
             fetchRooms();
-        }, 300); 
+        }, 300);
 
         return () => {
             clearTimeout(handler);
         };
-    }, [selectedFloor, searchQuery, token]); // Re-run effect when filters or token change 
+    }, [selectedFloor, searchQuery]); // Re-run effect when filters change 
 
     const leftWingRooms = rooms.filter(room => room.wing === 'Left');
     const rightWingRooms = rooms.filter(room => room.wing === 'Right');
-    
+
     const getColorClass = (status) => {
         if (status === 'Reserved') return 'reserved-red';
         if (status === 'Available') return 'available-grey';
@@ -66,11 +97,19 @@ const WardenRoomManagement = () => {
     };
 
     const handleRoomClick = (roomId) => {
-        setSelectedRoomId(roomId); 
+        setSelectedRoomId(roomId);
     };
-    
+
     return (
-        <WardenLayout>
+        <div className="room-management-page">
+            {/* Add back button header */}
+            <div className="room-header">
+                <button className="back-button" onClick={handleBack}>
+                    ← Back
+                </button>
+                <h1 className="page-title">Room Management</h1>
+            </div>
+
             <div className="help">
                 <div className="help-info">
                     <div className="circle reserved"></div>
@@ -84,19 +123,19 @@ const WardenRoomManagement = () => {
                     <div className="circle partial"></div>
                     <span>Partial</span>
                 </div>
-            </div>   
+            </div>
             <div className="container">
-                <div className="search-help">                   
+                <div className="search-help">
                     <h2 className="search">Search Room</h2>
                     <div className="filter">
-                        <input 
-                            type="text" 
-                            placeholder="Example: 'BAA101'"  
-                            value={searchQuery} 
+                        <input
+                            type="text"
+                            placeholder="Example: 'THL101'"
+                            value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
-                        <select 
-                            value={selectedFloor} 
+                        <select
+                            value={selectedFloor}
                             onChange={(e) => setSelectedFloor(e.target.value)}
                         >
                             <option value="1">Floor 1</option>
@@ -105,10 +144,9 @@ const WardenRoomManagement = () => {
                             <option value="4">Floor 4</option>
                             <option value="5">Floor 5</option>
                         </select>
-                        {/* REMOVED the 'Allot' button */}
                     </div>
                 </div>
-                
+
                 {isLoading ? (
                     <div className="loading-message">Loading rooms...</div>
                 ) : (
@@ -117,9 +155,9 @@ const WardenRoomManagement = () => {
                             <h5 className="wing-title">Left wing</h5>
                             <div className="room-grid">
                                 {leftWingRooms.map((room) => (
-                                    <div 
-                                        key={room.id} 
-                                        className={`room-card ${getColorClass(room.status)}`} 
+                                    <div
+                                        key={room.id}
+                                        className={`room-card ${getColorClass(room.status)}`}
                                         onClick={() => handleRoomClick(room.id)}
                                     >
                                         <div className="room-prefix">{room.id.substring(0, 3)}</div>
@@ -128,16 +166,16 @@ const WardenRoomManagement = () => {
                                 ))}
                             </div>
                         </div>
-                        
+
                         <h3 className="floor-seperator">Floor {selectedFloor}</h3>
-                        
+
                         <div className="wing">
                             <h5 className="wing-title">Right wing</h5>
                             <div className="room-grid">
                                 {rightWingRooms.map((room) => (
-                                    <div 
-                                        key={room.id} 
-                                        className={`room-card ${getColorClass(room.status)}`} 
+                                    <div
+                                        key={room.id}
+                                        className={`room-card ${getColorClass(room.status)}`}
                                         onClick={() => handleRoomClick(room.id)}
                                     >
                                         <div className="room-prefix">{room.id.substring(0, 3)}</div>
@@ -147,12 +185,12 @@ const WardenRoomManagement = () => {
                             </div>
                         </div>
                     </div>
-                )}    
+                )}
             </div>
-            
+
             {/* RENDER THE NEW WARDEN OVERLAY */}
             {selectedRoomId && <WardenRoomOverlay roomId={selectedRoomId} onClose={() => setSelectedRoomId(null)} />}
-        </WardenLayout>
+        </div>
     );
 };
 
