@@ -1,33 +1,72 @@
-
 import supabase from '../config/supabaseClient.js';
 import { v4 as uuidv4 } from 'uuid';
 
+// @desc    Register a new student
+// @route   POST /api/students/register
 export const registerStudent = async (req, res) => {
-    const { email, password, fullName, ...rest } = req.body;
+    const { email, password, fullName, address, phoneNo, gender, guardianName, guardianRelation, guardianPhone, hostelId } = req.body;
 
-    // 1. Create the user in your 'users' table with the plain text password
-    const user_id = `USER-${uuidv4().slice(0, 8).toUpperCase()}`;
-    const { error: userError } = await supabase.from('users').insert({
-        user_id,
+    // --- 1. Create Supabase Auth User ---
+    const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
-        password: password, // Storing password directly
-        role: 'student'
+        password,
     });
+    if (authError) return res.status(400).json({ error: authError.message });
+    if (!authData.user) return res.status(500).json({ error: 'Failed to create auth user.' });
 
-    if (userError) return res.status(400).json({ error: `User creation failed: ${userError.message}` });
+    const userId = authData.user.id;
 
-    // 2. Create the guardian and student profiles (same as before)
-    const guardian_id = `GUA-${uuidv4().slice(0, 6).toUpperCase()}`;
-    const { error: guardianError } = await supabase.from('GUARDIAN').insert({
-        guardian_id, guardian_name: rest.guardianName, guardian_relation: rest.guardianRelation, guardian_phone: rest.guardianPhone
-    });
-    if (guardianError) return res.status(400).json({ error: `Guardian creation failed: ${guardianError.message}` });
+    try {
+        // --- 2. Create Guardian ---
+        const guardian_id = `G-${uuidv4().slice(0, 7).toUpperCase()}`;
+        const { error: guardianError } = await supabase.from('guardian').insert({
+            guardian_id, guardian_name: guardianName, guardian_relation: guardianRelation, guardian_phone: guardianPhone
+        });
+        if (guardianError) throw guardianError;
 
-    const roll_no = `STU-${uuidv4().slice(0, 6).toUpperCase()}`;
-    const { data: studentData, error: studentError } = await supabase.from('STUDENT').insert({
-        roll_no, name: fullName, address: rest.address, phone_no: rest.phoneNo, gender: rest.gender, guardian_id, user_id
-    }).select();
-    if (studentError) return res.status(400).json({ error: `Student creation failed: ${studentError.message}` });
+        // --- 3. Create Student Profile ---
+        const roll_no = `S-${uuidv4().slice(0, 7).toUpperCase()}`;
+        const { data: studentData, error: studentError } = await supabase
+            .from('student')
+            .insert({
+                roll_no,
+                user_id: userId,
+                name: fullName,
+                address,
+                phone_no: phoneNo,
+                gender,
+                guardian_id,
+                hostel_id: hostelId // Make sure this hostel_id exists in your 'hostel' table
+            })
+            .select()
+            .single();
+        
+        if (studentError) throw studentError;
+        
+        res.status(201).json({ message: 'Student registered successfully', student: studentData });
 
-    res.status(201).json({ message: 'Student registered successfully', student: studentData[0] });
+    } catch (error) {
+        // If profile creation fails, delete the orphaned auth user
+        await supabase.auth.admin.deleteUser(userId);
+        console.error('Error in student registration:', error.message);
+        res.status(500).json({ error: 'Failed to create student profile.', details: error.message });
+    }
+};
+
+// @desc    Get all students
+// @route   GET /api/students
+// @access  Warden, Admin
+export const getAllStudents = async (req, res) => {
+    try {
+        const { data, error } = await supabase
+            .from('student')
+            .select('roll_no, name, phone_no, hostel_id'); // Select only the fields you need for the list
+        
+        if (error) throw error;
+        res.status(200).json(data);
+
+    } catch (error) {
+        console.error('Error in getAllStudents:', error.message);
+        res.status(500).json({ error: 'Failed to fetch students.' });
+    }
 };

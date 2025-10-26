@@ -1,8 +1,11 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
-import { supabase } from '../supabase'; // Import Supabase client
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '../supabase'; // Import the Supabase client
+import axios from 'axios'; // Import axios for API calls
 
+// Create the context
 export const AuthContext = createContext(null);
 
+// Custom hook to use the AuthContext
 export const useAuth = () => {
     const context = useContext(AuthContext);
     if (!context) {
@@ -11,24 +14,74 @@ export const useAuth = () => {
     return context;
 };
 
+// This is a continuation of the AuthProvider
+// (This code block is not a complete file)
+
 export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(null); // Supabase user object
-    const [session, setSession] = useState(null); // Supabase session object
+    const [token, setToken] = useState(null);
+    const [user, setUser] = useState(null); // This will hold the full profile
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Check initial session
-        supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
-            setSession(currentSession);
-            setUser(currentSession?.user ?? null);
-            setLoading(false);
-        });
+        // This effect runs once when the app loads
+        const initializeSession = async () => {
+            // 1. Check if a session already exists with Supabase
+            const { data: { session }, error } = await supabase.auth.getSession();
+            
+            if (session) {
+                const authToken = session.access_token;
+                setToken(authToken);
 
-        // Listen for auth state changes (login, logout)
+                try {
+                    // 2. If session exists, fetch the full user profile from our backend
+                    const response = await axios.get('http://localhost:3001/api/auth/me', {
+                        headers: { Authorization: `Bearer ${authToken}` }
+                    });
+                    
+                    if (response.data) {
+                        setUser(response.data); // Set the full profile (with role, roll_no, etc.)
+                    } else {
+                        // User is in Supabase Auth but not in our profile tables
+                        throw new Error('User profile not found.');
+                    }
+                } catch (err) {
+                    console.error("Failed to fetch user profile:", err);
+                    // If profile fetch fails, log them out
+                    await supabase.auth.signOut();
+                    setUser(null);
+                    setToken(null);
+                }
+            } else {
+                // No session
+                setUser(null);
+                setToken(null);
+            }
+            setLoading(false);
+        };
+
+        initializeSession();
+
+        // 3. Listen for future auth state changes (login/logout)
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
-            (_event, currentSession) => {
-                setSession(currentSession);
-                setUser(currentSession?.user ?? null);
+            async (event, newSession) => {
+                setLoading(true);
+                const authToken = newSession?.access_token || null;
+                setToken(authToken);
+
+                if (event === 'SIGNED_IN' && authToken) {
+                    try {
+                        // When a new login is detected, fetch the full profile
+                        const response = await axios.get('http://localhost:3001/api/auth/me', {
+                            headers: { Authorization: `Bearer ${authToken}` }
+                        });
+                        setUser(response.data);
+                    } catch (err) {
+                        console.error("Failed to fetch user profile after SIGNED_IN:", err);
+                        setUser(null);
+                    }
+                } else if (event === 'SIGNED_OUT') {
+                    setUser(null);
+                }
                 setLoading(false);
             }
         );
@@ -37,15 +90,38 @@ export const AuthProvider = ({ children }) => {
         return () => subscription?.unsubscribe();
     }, []);
 
-    // login function might not be strictly needed if Supabase handles everything,
-    // but we can keep it for triggering state updates if necessary.
-    const login = (authToken, userData) => {
-       // This function might become simpler or unnecessary
-       // as onAuthStateChange handles updates automatically.
-       // We keep it for potential manual state triggers.
-       console.log("Context login called (may be redundant with Supabase listener)");
-       setSession({ access_token: authToken, user: userData }); // Simulate session update
-       setUser(userData);
+    // ... (login and logout functions to follow) ...
+        // ... (state and useEffect from Part 2) ...
+
+    // The login function handles Supabase login and fetches user profile
+    const login = async (email, password) => {
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+        });
+
+        if (error) {
+            throw error;
+        }
+
+        // Fetch user profile immediately after successful login
+        try {
+            const response = await axios.get('http://localhost:3001/api/auth/me', {
+                headers: { Authorization: `Bearer ${data.session.access_token}` }
+            });
+            
+            if (response.data) {
+                setUser(response.data);
+                setToken(data.session.access_token);
+                return response.data; // Return user profile with role
+            } else {
+                throw new Error('User profile not found.');
+            }
+        } catch (err) {
+            console.error("Failed to fetch user profile:", err);
+            await supabase.auth.signOut();
+            throw new Error('Failed to fetch user profile. Please try again.');
+        }
     };
 
     const logout = async () => {
@@ -54,24 +130,25 @@ export const AuthProvider = ({ children }) => {
         if (error) {
             console.error("Error logging out:", error);
         }
-        // onAuthStateChange will handle setting user/session to null
+        // The 'onAuthStateChange' listener will handle setting user/token to null.
+        setToken(null);
+        setUser(null);
         setLoading(false);
     };
 
+    // This is the value that all components in your app can access
     const value = {
-        session,
+        token,
         user,
         loading,
-        login, // Keep for compatibility or specific needs
+        login, // Expose the new login function
         logout,
-        isAuthenticated: !!session?.access_token, // Check based on Supabase session
-        token: session?.access_token // Provide token if needed elsewhere
+        isAuthenticated: !!token // True if a token exists
     };
 
     return (
         <AuthContext.Provider value={value}>
-            {!loading && children} {/* Render children only when initial auth check is done */}
+            {!loading && children} {/* Render children only when auth check is complete */}
         </AuthContext.Provider>
     );
 };
-

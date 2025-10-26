@@ -17,7 +17,7 @@ export const markAttendance = async (req, res) => {
 
     try {
         const { data: existingRecord, error: findError } = await supabase
-            .from('attendance') 
+            .from('attendance')
             .select('*')
             .eq('roll_no', roll_no)
             .eq('date', today)
@@ -28,7 +28,7 @@ export const markAttendance = async (req, res) => {
         if (existingRecord) {
             const updateField = type === 'in' ? 'in_time' : 'out_time';
             const { data, error } = await supabase
-                .from('attendance') 
+                .from('attendance')
                 .update({ [updateField]: new Date().toISOString() })
                 .eq('attendance_id', existingRecord.attendance_id)
                 .select().single();
@@ -41,7 +41,7 @@ export const markAttendance = async (req, res) => {
             }
             const attendance_id = `ATT-${uuidv4().slice(0, 6).toUpperCase()}`;
             const { data, error } = await supabase
-                .from('attendance') 
+                .from('attendance')
                 .insert({ attendance_id, roll_no, date: today, in_time: new Date().toISOString() })
                 .select().single();
 
@@ -62,58 +62,42 @@ export const markAttendance = async (req, res) => {
  */
 export const getAttendance = async (req, res) => {
     const { date } = req.query;
-    // Use req.user which contains { userId, role } from your current middleware
-    const { userId, role } = req.user; 
+    // --- THIS IS THE FIX ---
+    // Read from req.profile (which is attached by protectAndFetchProfile)
+    // instead of req.user.
+    const userProfile = req.profile; 
 
     if (!date) {
         return res.status(400).json({ error: 'Date query parameter is required.' });
     }
     
-    // --- SAFETY CHECK ---
-    // Make sure userId and role are present before proceeding
-    if (!userId || !role) { 
-        console.error('Error in getAttendance: req.user is missing. Check middleware setup.');
+    // Safety check - ensures profile was attached correctly
+    if (!userProfile || !userProfile.role) { 
+        console.error('Error in getAttendance: req.profile is missing. Check middleware setup.');
         return res.status(401).json({ error: 'Authentication data missing.' });
     }
-    // --- END SAFETY CHECK ---
 
     try {
-        if (role === 'student') {
-            // If the user is a student, we first need to find their roll_no using userId
-            const { data: studentProfile, error: profileError } = await supabase
-                .from('student') // Assuming lowercase table name
-                .select('roll_no')
-                .eq('user_id', userId)
-                .single();
-
-            // --- IMPROVED CHECK ---
-            if (profileError || !studentProfile || !studentProfile.roll_no) {
-                console.error(`Student profile or roll_no not found for user ID: ${userId}`, profileError);
-                console.log("Profile data found:", studentProfile);
-                return res.status(404).json({ error: 'Student profile or roll number not found.' });
-            }
-            // --- END IMPROVED CHECK ---
-
-            // Now fetch the attendance for that student's roll_no
+        if (userProfile.role === 'student') {
+            // We can now directly use the roll_no from the profile
             const { data, error } = await supabase
-                .from('attendance') // Assuming lowercase table name
+                .from('attendance') 
                 .select('in_time, out_time')
-                .eq('roll_no', studentProfile.roll_no)
+                .eq('roll_no', userProfile.roll_no) // Use roll_no from profile
                 .eq('date', date)
                 .single();
 
-            // Ignore "no rows found" error, just return null
-            if (error && error.code !== 'PGRST116') {
+            if (error && error.code !== 'PGRST116') { // Ignore "no rows" error
                 throw error;
             }
             
             return res.status(200).json(data);
 
         } else {
-            // Wardens/Admins can see all records for a given date
+            // Wardens/Admins can see all records
             const { data, error } = await supabase
-                .from('attendance') // Assuming lowercase table name
-                .select(`*, student ( name, roll_no )`) // Assuming lowercase table name
+                .from('attendance')
+                .select(`*, student ( name, roll_no )`)
                 .eq('date', date);
 
             if (error) throw error;

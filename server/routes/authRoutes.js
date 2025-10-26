@@ -1,12 +1,23 @@
+// This file is updated. Since login is handled by the Supabase client
+// on the frontend, the POST /login route is no longer needed here.
+
 import express from 'express';
-// Removed the import for loginUser as it's no longer exported from the controller
+// We remove the 'loginUser' import because it doesn't exist anymore.
+// We *do* need the middleware and a new controller function for fetching user data.
+import { protectAndFetchProfile } from '../middleware/authMiddleware.js';
+import { findUserProfile } from '../controllers/authController.js';
 
 const router = express.Router();
 
-// Route for traditional email/password login is removed as login is handled on the frontend.
-// router.post('/login', loginUser); 
-
-// You can add other auth-related routes here later if needed (e.g., get user profile)
+// @desc    Get the profile of the currently logged-in user
+// @route   GET /api/auth/me
+// @access  Private (any authenticated user)
+// This route is useful for the frontend to get user data after a page reload.
+router.get('/me', protectAndFetchProfile, (req, res) => {
+    // The protectAndFetchProfile middleware has already run,
+    // so the full user profile is attached to req.profile.
+    res.status(200).json(req.profile);
+});
 
 export default router;
 
