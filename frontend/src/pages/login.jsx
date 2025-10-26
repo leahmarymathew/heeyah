@@ -191,11 +191,11 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      // 1. Call the login function from AuthContext.
-      const user = await login(identifier, password);
+      // 1. Call the login function from AuthContext and get user data
+      const userData = await login(identifier, password);
 
-      // 2. Now that we have the user and their role, we can navigate.
-      const destination = getRoleDashboard(user.role);
+      // 2. Navigate based on user role
+      const destination = getRoleDashboard(userData.role);
       navigate(destination);
 
     } catch (err) {

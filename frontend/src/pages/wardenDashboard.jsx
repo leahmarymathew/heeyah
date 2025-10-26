@@ -1,9 +1,9 @@
-import React from "react";
+import WardenLayout from "../components/WardenLayout";
 import "./wardenDashboard.css";
 
 const WardenDashboard = () => {
   return (
-    <>
+    <WardenLayout>
       <div className="wrapper">
         <div className="leftSect">
           <div className="stdReport">
@@ -53,7 +53,7 @@ const WardenDashboard = () => {
           </ul>
         </div>
       </div>
-    </>
+    </WardenLayout>
   );
 };
 

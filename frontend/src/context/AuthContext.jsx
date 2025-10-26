@@ -93,23 +93,35 @@ export const AuthProvider = ({ children }) => {
     // ... (login and logout functions to follow) ...
         // ... (state and useEffect from Part 2) ...
 
-    // The login function is now simpler. It just triggers the Supabase login.
-    // The onAuthStateChange listener above will handle fetching the profile.
+    // The login function handles Supabase login and fetches user profile
     const login = async (email, password) => {
-        // This function is now just a wrapper for the Supabase call
-        // The Login.jsx component will call this
         const { data, error } = await supabase.auth.signInWithPassword({
             email,
             password,
         });
 
         if (error) {
-            throw error; // Let the Login.jsx component catch and display this error
+            throw error;
         }
 
-        // If login is successful, the 'onAuthStateChange' listener will automatically
-        // fetch the user's profile and update the state.
-        return data;
+        // Fetch user profile immediately after successful login
+        try {
+            const response = await axios.get('http://localhost:3001/api/auth/me', {
+                headers: { Authorization: `Bearer ${data.session.access_token}` }
+            });
+            
+            if (response.data) {
+                setUser(response.data);
+                setToken(data.session.access_token);
+                return response.data; // Return user profile with role
+            } else {
+                throw new Error('User profile not found.');
+            }
+        } catch (err) {
+            console.error("Failed to fetch user profile:", err);
+            await supabase.auth.signOut();
+            throw new Error('Failed to fetch user profile. Please try again.');
+        }
     };
 
     const logout = async () => {

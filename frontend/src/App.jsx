@@ -6,9 +6,10 @@ import ProtectedRoute from './components/ProtectedRoute';
 import LostAndFound from './pages/LostAndFound';
 import Complaint from './pages/Complaint';
 import StudentAttendance from './pages/StudentAttendance';
-import WardenDashboard from './pages/wardenDashboard'; // 👈 Import the new dashboard
+import WardenDashboard from './pages/wardenDashboard';
 import AppLayout from './components/AppLayout.jsx';
 import RoomAllocationPage from './pages/roomAllocation.jsx';
+import RoleBasedRedirect from './components/RoleBasedRedirect.jsx';
 
 function App() {
   return (
@@ -16,15 +17,17 @@ function App() {
       {/* --- Public Route --- */}
       <Route path="/login" element={<Login />} />
       
-      {/* --- Protected Routes (Pages that require login) --- */}
+      {/* --- Warden Routes (separate layout) --- */}
+      <Route path="/warden-dashboard" element={<ProtectedRoute><WardenDashboard /></ProtectedRoute>} />
+      
+      {/* --- Protected Routes with Student/Admin Layout --- */}
       <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
-        {/* Student Default */}
-        <Route path="/dashboard" element={<Dashboard />} /> 
+        {/* Role-based redirect for /dashboard */}
+        <Route path="/dashboard" element={<RoleBasedRedirect />} /> 
 
-        {/* Role Specific Routes */}
+        {/* Student/Admin Routes */}
         <Route path="/attendance" element={<StudentAttendance />} /> 
-        <Route path="/warden-dashboard" element={<WardenDashboard />} /> {/* 👈 Warden Route */}
-        <Route path="/admin-dashboard" element={<Dashboard />} />     {/* Admin Route (Placeholder) */}
+        <Route path="/admin-dashboard" element={<Dashboard />} />
 
         {/* General Protected Routes */}
         <Route path="/complaint" element={<Complaint />} />
