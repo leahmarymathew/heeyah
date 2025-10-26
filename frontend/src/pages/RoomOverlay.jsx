@@ -4,25 +4,155 @@ import React, { useEffect, useState } from 'react';
 import PersonAtDeskPNG from '../assets/big_9983236 1.png'; 
 import SingleBedPNG from '../assets/single-bed_857707 1.png';
 
+// -----------------------------------------------------------------------------
+// NEW COMPONENT: Allocation Modal
+// -----------------------------------------------------------------------------
+const AllocationModal = ({ bedId, roomName, onClose, onSubmit }) => {
+    const [name, setName] = useState('');
+    const [rollNo, setRollNo] = useState('');
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        // Calls the onSubmit handler in the parent component
+        onSubmit(bedId, name, rollNo); 
+    };
+
+    const modalStyles = {
+        overlay: {
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 2000, // Higher z-index than RoomOverlay
+        },
+        modal: {
+            backgroundColor: 'white',
+            borderRadius: '12px',
+            padding: '30px',
+            width: '90%',
+            maxWidth: '400px',
+            position: 'relative',
+            boxShadow: '0 10px 25px rgba(0,0,0,0.3)',
+        },
+        formGroup: {
+            marginBottom: '15px',
+        },
+        label: {
+            display: 'block',
+            marginBottom: '5px',
+            fontWeight: '600',
+        },
+        input: {
+            width: '100%',
+            padding: '10px',
+            border: '1px solid #ccc',
+            borderRadius: '6px',
+            boxSizing: 'border-box',
+        },
+        buttonContainer: {
+            display: 'flex',
+            justifyContent: 'flex-end',
+            gap: '10px',
+            marginTop: '20px',
+        },
+        submitButton: {
+            padding: '10px 20px',
+            backgroundColor: '#3751FE',
+            color: 'white',
+            border: 'none',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            fontWeight: '600',
+            
+            // FIX: Ensure button text is perfectly aligned vertically
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: '40px', 
+        },
+        cancelButton: {
+            padding: '10px 20px',
+            backgroundColor: '#eee',
+            border: '1px solid #ccc',
+            color: '#333',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            
+            // FIX: Ensure button text is perfectly aligned vertically
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: '40px',
+        }
+    };
+
+    return (
+        <div style={modalStyles.overlay} onClick={onClose}>
+            <div style={modalStyles.modal} onClick={e => e.stopPropagation()}>
+                <h2>Allocate Student to Bed {bedId} in {roomName}</h2>
+                <form onSubmit={handleSubmit}>
+                    <div style={modalStyles.formGroup}>
+                        <label style={modalStyles.label} htmlFor="name">Student Name</label>
+                        <input 
+                            style={modalStyles.input} 
+                            type="text" 
+                            id="name" 
+                            value={name} 
+                            onChange={(e) => setName(e.target.value)} 
+                            required 
+                        />
+                    </div>
+                    <div style={modalStyles.formGroup}>
+                        <label style={modalStyles.label} htmlFor="rollNo">Roll Number</label>
+                        <input 
+                            style={modalStyles.input} 
+                            type="text" 
+                            id="rollNo" 
+                            value={rollNo} 
+                            onChange={(e) => setRollNo(e.target.value)} 
+                            required 
+                        />
+                    </div>
+                    <div style={modalStyles.buttonContainer}>
+                        <button type="button" style={modalStyles.cancelButton} onClick={onClose}>Cancel</button>
+                        <button type="submit" style={modalStyles.submitButton}>Allocate Bed</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+};
+// -----------------------------------------------------------------------------
+
 // Placeholder for the Free Space Icon (styled to overlay the '+' on the bed PNG)
-const FreeSpaceIcon = () => (
-    <div style={{
-        position: 'absolute',
-        top: '40%', // Moved up slightly to align with pushed-up text
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        fontSize: '30px',
-        color: 'white',
-        backgroundColor: '#388E3C',
-        borderRadius: '50%',
-        width: '40px',
-        height: '40px',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        fontWeight: 'bold',
-        zIndex: 10,
-    }}>+</div>
+// UPDATED: Now accepts an onClick prop
+const FreeSpaceIcon = ({ onClick }) => (
+    <div 
+        onClick={onClick}
+        style={{
+            position: 'absolute',
+            top: '40%', // Moved up slightly to align with pushed-up text
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            fontSize: '30px',
+            color: 'white',
+            backgroundColor: '#388E3C',
+            borderRadius: '50%',
+            width: '40px',
+            height: '40px',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            fontWeight: 'bold',
+            zIndex: 10,
+            cursor: 'pointer', // Make it clear it's clickable
+        }}
+    >+</div>
 );
 
 // --- HARDCODING REMOVED: Your Friend needs to integrate the fetch logic here ---
@@ -32,9 +162,9 @@ const FreeSpaceIcon = () => (
     roomName: 'BAA-103',
     capacity: 3,
     beds: [
-        { id: 1, occupied: true, name: 'Suraj S', rollNo: '2023BCY49' }, // Corresponds to Left-Middle (Vertical)
-        { id: 2, occupied: true, name: 'Swalih', rollNo: '2023BCY49' }, // Corresponds to Right-Top (Horizontal)
-        { id: 3, occupied: false, name: 'Free space', rollNo: null },    // Corresponds to Right-Middle (Vertical)
+        { id: 1, occupied: true, name: 'Suraj S', rollNo: '2023BCY49' },
+        { id: 2, occupied: true, name: 'Swalih', rollNo: '2023BCY49' },
+        { id: 3, occupied: false, name: 'Free space', rollNo: null },
     ],
 }
 */
@@ -43,6 +173,33 @@ const FreeSpaceIcon = () => (
 const RoomOverlay = ({ roomId, onClose }) => {
     const [roomData, setRoomData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
+    // NEW STATE: State for the allocation modal
+    const [isAllocationModalOpen, setIsAllocationModalOpen] = useState(false);
+    const [selectedBedId, setSelectedBedId] = useState(null);
+
+    // Function to open the allocation modal, storing the bed ID
+    const handleFreeSpaceClick = (bedId) => {
+        setSelectedBedId(bedId);
+        setIsAllocationModalOpen(true);
+    };
+
+    // Function to handle allocation submission (mock implementation)
+    const handleAllocationSubmit = (bedId, name, rollNo) => {
+        console.log(`Allocating student to Bed ${bedId} in ${roomData.roomName}: Name=${name}, RollNo=${rollNo}`);
+        // In a real application, you would make an API call here to update the room data.
+        
+        // --- Temporary client-side update for demonstration ---
+        setRoomData(prevData => {
+            const updatedBeds = prevData.beds.map(bed => 
+                bed.id === bedId ? { ...bed, occupied: true, name: name, rollNo: rollNo } : bed
+            );
+            return { ...prevData, beds: updatedBeds };
+        });
+        
+        // Close the modal after submission
+        setIsAllocationModalOpen(false);
+    };
+
 
     // Fetch data based on roomId
     useEffect(() => {
@@ -240,7 +397,8 @@ const RoomOverlay = ({ roomId, onClose }) => {
                     </div>
                 ) : (
                     <>
-                        <FreeSpaceIcon />
+                        {/* UPDATED: Pass the handler to FreeSpaceIcon, using the bed ID */}
+                        <FreeSpaceIcon onClick={() => handleFreeSpaceClick(data.id)} />
                         {/* CORRECTED: Moved text up by changing bottom property */}
                         <div style={{ ...textStyle, color: '#388E3C', bottom: '35px' }}>
                             {data.name}
@@ -296,6 +454,16 @@ const RoomOverlay = ({ roomId, onClose }) => {
 
                 </div>
             </div>
+
+            {/* NEW: Conditional rendering of the Allocation Modal */}
+            {isAllocationModalOpen && selectedBedId && (
+                <AllocationModal 
+                    bedId={selectedBedId}
+                    roomName={roomData.roomName}
+                    onClose={() => setIsAllocationModalOpen(false)}
+                    onSubmit={handleAllocationSubmit}
+                />
+            )}
         </div>
     );
 };
