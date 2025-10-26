@@ -160,7 +160,7 @@ function Complaint() {
                 <input type="checkbox" name="isAnonymous" checked={formData.isAnonymous} onChange={handleChange} className="rounded text-primary-blue focus:ring-primary-blue" />
                 <span className="text-sm text-gray-600">Keep your name anonymous</span>
               </label>
-              <button type="submit" disabled={loading} className="bg-primary-blue text-white font-bold py-3 px-8 rounded-lg hover:bg-blue-700 transition disabled:bg-gray-400">
+              <button type="submit" disabled={loading} className="text-sm bg-primary-blue text-white font-bold rounded-lg hover:bg-blue-700 transition disabled:bg-gray-400">
                 {loading ? 'Submitting...' : 'File Complaint'}
               </button>
             </div>
