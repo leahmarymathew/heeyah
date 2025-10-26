@@ -1,9 +1,9 @@
-// src/pages/RoomAllocation.jsx
-import React, { useState, useEffect } from 'react';
-import RoomOverlay from './RoomOverlay'; // IMPORT THE NEW OVERLAY COMPONENT
-import './RoomAllocation.css';
-
-// The placeholder RoomOverlay component has been removed from here.
+// This file is updated to make a real API call to your backend.
+import React, { useState, useEffect, useContext } from 'react';
+import axios from 'axios';
+import { AuthContext } from '../context/AuthContext';
+import RoomOverlay from './RoomOverlay'; // Import the overlay component
+import './roomAllocation.css'; // Import the custom CSS
 
 const RoomAllocationPage = () => {
     const [searchQuery, setSearchQuery] = useState('');
@@ -11,32 +11,31 @@ const RoomAllocationPage = () => {
     const [rooms, setRooms] = useState([]);
     const [isLoading, setIsLoading] = useState(true); 
     const [selectedRoomId, setSelectedRoomId] = useState(null);
+    const { token } = useContext(AuthContext); // Get auth token
 
-    // --- useEffect to Fetch Data from the Backend ---
     useEffect(() => {
         const fetchRooms = async () => {
             setIsLoading(true);
+            if (!token) {
+                console.error("No auth token found");
+                setIsLoading(false);
+                return;
+            }
+            
             try {
-                // ... (API call simulation remains the same)
+                // --- REAL API CALL ---
+                // We pass the filters as query parameters to the backend
+                const response = await axios.get(`http://localhost:3001/api/rooms/layout`, {
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    params: {
+                        floor: selectedFloor,
+                        search: searchQuery
+                    }
+                });
                 
-                // --- Mock Data for demonstration without a running backend ---
-                const mockRooms = [
-                    { id: 'BAA101', wing: 'Left', status: 'Reserved' },
-                    { id: 'BAA102', wing: 'Left', status: 'Available' },
-                    { id: 'BAA103', wing: 'Left', status: 'Partial' },
-                    { id: 'BAB101', wing: 'Right', status: 'Available' },
-                    { id: 'BAB102', wing: 'Right', status: 'Reserved' },
-                    { id: 'BAB103', wing: 'Right', status: 'Available' },
-                ];
-                
-                const filteredRooms = mockRooms
-                    .filter(room => room.id.includes(selectedFloor)) 
-                    .filter(room => room.id.toLowerCase().includes(searchQuery.toLowerCase()));
-
-                await new Promise(resolve => setTimeout(resolve, 300)); // Simulate network delay
-                
-                setRooms(filteredRooms);
-                // -----------------------------------------------------------
+                // The backend now returns data in the format we need
+                setRooms(response.data);
+                // ---------------------
 
             } catch (error) {
                 console.error("Failed to fetch rooms:", error);
@@ -45,6 +44,7 @@ const RoomAllocationPage = () => {
             }
         };
 
+      // Debounce the fetch call to avoid spamming the API on every key press
         const handler = setTimeout(() => {
             fetchRooms();
         }, 300); 
@@ -52,12 +52,12 @@ const RoomAllocationPage = () => {
         return () => {
             clearTimeout(handler);
         };
-    }, [selectedFloor, searchQuery]); 
+    }, [selectedFloor, searchQuery, token]); // Re-run effect when filters or token change
 
     const leftWingRooms = rooms.filter(room => room.wing === 'Left');
     const rightWingRooms = rooms.filter(room => room.wing === 'Right');
     
-    // Helper function to map status to the specific color class for the room-card
+    // Helper function to map status to the specific color class
     const getColorClass = (status) => {
         if (status === 'Reserved') return 'reserved-red';
         if (status === 'Available') return 'available-grey';
@@ -66,29 +66,27 @@ const RoomAllocationPage = () => {
     };
 
     const handleRoomClick = (roomId) => {
-        // Force the ID to 'BAA103' to display the mock data in the overlay
-        setSelectedRoomId('BAA103'); 
+        setSelectedRoomId(roomId); 
     };
     
     return (
         <>
-            {/* The rest of your existing Room Allocation Page content */}
             <div className="help">
-                <div className="help-info">
-                    <div className="circle reserved"></div>
-                    <span>Reserved</span>
-                </div>
-                <div className="help-info">
-                    <div className="circle available"></div>
-                    <span>Available</span>
-                </div>
-                <div className="help-info">
-                    <div className="circle partial"></div>
-                    <span>Partial</span>
-                </div>
-            </div>   
+               <div className="help-info">
+                    <div className="circle reserved"></div>
+                    <span>Reserved</span>
+                </div>
+                <div className="help-info">
+                    <div className="circle available"></div>
+                    <span>Available</span>
+                </div>
+                <div className="help-info">
+                    <div className="circle partial"></div>
+                    <span>Partial</span>
+                </div>
+            </div>  
             <div className="container">
-                <div className="search-help">                   
+                <div className="search-help">            
                     <h2 className="search">Search Room</h2>
                     <div className="filter">
                         <input 
@@ -152,10 +150,11 @@ const RoomAllocationPage = () => {
                     </div>
                 )}    
             </div>
-            {/* RENDER THE CORRECT OVERLAY COMPONENT */}
+            {/* RENDER THE OVERLAY COMPONENT, passing the selected room ID */}
             {selectedRoomId && <RoomOverlay roomId={selectedRoomId} onClose={() => setSelectedRoomId(null)} />}
         </>
     );
 };
 
 export default RoomAllocationPage;
+

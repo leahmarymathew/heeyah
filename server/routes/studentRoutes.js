@@ -1,14 +1,20 @@
-
 import express from 'express';
-import { registerStudent } from '../controllers/studentController.js';
-import { getStudentAllocation } from '../controllers/roomAllocController.js'; // <-- IMPORT
 import { protectAndFetchProfile, checkRole } from '../middleware/authMiddleware.js';
+import { 
+    registerStudent,
+    getAllStudents 
+} from '../controllers/studentController.js';
+// We removed the incorrect import of 'getStudentAllocation' from this file.
 
 const router = express.Router();
 
+// Route for an admin to register a new student
+router.post('/register', protectAndFetchProfile, checkRole(['warden', 'admin']), registerStudent);
 
+// Route for an admin to get a list of all students
+router.get('/', protectAndFetchProfile, checkRole(['warden', 'admin']), getAllStudents);
 
-// Route to get a specific student's room allocation details
-router.get('/:roll_no/allocation', protectAndFetchProfile, checkRole(['student', 'warden', 'admin']), getStudentAllocation);
+// The route for a student to get their own allocation
+// is now correctly located in 'roomAllocRoutes.js'
 
 export default router;

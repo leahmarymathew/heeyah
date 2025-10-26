@@ -1,11 +1,15 @@
-// Corrected to use Supabase for token verification and fetch full profile
+// This is the correct, final version of your middleware.
+// It verifies the Supabase token AND fetches the user's full profile.
 
 import supabase from '../config/supabaseClient.js';
-// Make sure this helper function exists and is correctly exported from your authController
+// Make sure this helper function is correctly exported from your authController
 import { findUserProfile } from '../controllers/authController.js'; 
 
-// Middleware to check for a valid Supabase JWT and attach the user profile
-// Renamed for clarity, as it does more than just 'protect'
+/**
+ * @desc Verifies Supabase token AND fetches the user's full profile
+ * from the 'student', 'warden', or 'caretaker' tables.
+ * Attaches the full profile to req.profile.
+ */
 export const protectAndFetchProfile = async (req, res, next) => {
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) {
@@ -34,16 +38,19 @@ export const protectAndFetchProfile = async (req, res, next) => {
 
     } catch (error) {
         console.error("Error in protectAndFetchProfile middleware:", error);
-        res.status(500).json({ error: 'Internal server error during authentication.' }); // Use 500 for unexpected errors
+        res.status(500).json({ error: 'Internal server error during authentication.' });
     }
 };
 
-// Middleware to check if the user (whose profile is now attached) has an allowed role
+/**
+ * @desc Checks if the user (attached at req.profile) has an allowed role.
+ * This middleware MUST run AFTER protectAndFetchProfile.
+ */
 export const checkRole = (allowedRoles) => (req, res, next) => {
-    // Now checks req.profile which is attached by protectAndFetchProfile
     if (!req.profile || !req.profile.role || !allowedRoles.includes(req.profile.role)) {
         return res.status(403).json({ error: 'Forbidden: You do not have the required permissions.' });
     }
     // If role is allowed, proceed
     next();
 };
+

@@ -1,6 +1,3 @@
-// This is the corrected App.jsx file. It acts as the central router for your application,
-// using AppLayout to provide a consistent Navbar for all protected pages.
-
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Login from './pages/Login';
@@ -9,7 +6,9 @@ import ProtectedRoute from './components/ProtectedRoute';
 import LostAndFound from './pages/LostAndFound';
 import Complaint from './pages/Complaint';
 import StudentAttendance from './pages/StudentAttendance';
+import WardenDashboard from './pages/wardenDashboard'; // 👈 Import the new dashboard
 import AppLayout from './components/AppLayout.jsx';
+import RoomAllocationPage from './pages/roomAllocation.jsx';
 
 function App() {
   return (
@@ -19,10 +18,19 @@ function App() {
       
       {/* --- Protected Routes (Pages that require login) --- */}
       <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
-        <Route path="/dashboard" element={<Dashboard />} />
+        {/* Student Default */}
+        <Route path="/dashboard" element={<Dashboard />} /> 
+
+        {/* Role Specific Routes */}
+        <Route path="/attendance" element={<StudentAttendance />} /> 
+        <Route path="/warden-dashboard" element={<WardenDashboard />} /> {/* 👈 Warden Route */}
+        <Route path="/admin-dashboard" element={<Dashboard />} />     {/* Admin Route (Placeholder) */}
+
+        {/* General Protected Routes */}
         <Route path="/complaint" element={<Complaint />} />
         <Route path="/lost-and-found" element={<LostAndFound />} />
-        <Route path="/attendance" element={<StudentAttendance />} /> 
+        <Route path="/room-allocation" element={<RoomAllocationPage />} />
+        
       </Route>
       
       {/* Default route */}
@@ -32,4 +40,3 @@ function App() {
 }
 
 export default App;
-

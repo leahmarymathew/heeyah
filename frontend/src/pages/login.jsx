@@ -1,14 +1,14 @@
 import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-// Removed axios as it's no longer needed for login here
 import { supabase } from '../supabase'; // Import the Supabase client
-import { AuthContext } from '../context/AuthContext';
+import { AuthContext } from '../context/AuthContext'; // Import the context
 
 // Import your local images from the assets folder
-import loginIllustration from '../assets/login-illustration.png'; // Assuming PNG
-import heeyahLogo from '../assets/heeyah-logo.png'; // Assuming PNG
+// Assuming files are named heeyah-logo.png and login-illustration.png
+import loginIllustration from '../assets/login-illustration.png';
+import heeyahLogo from '../assets/heeyah-logo.png';
 
-// Your embedded CSS styles remain exactly the same
+// Your embedded CSS styles remain the same
 const LoginPageStyles = () => (
   <style>{`
     @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap');
@@ -158,15 +158,32 @@ const LoginPageStyles = () => (
   `}</style>
 );
 
+
 export default function LoginPage() {
-  const [identifier, setIdentifier] = useState(''); // This should now be the user's EMAIL
+  const [identifier, setIdentifier] = useState(''); // This will hold the email
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   
   const navigate = useNavigate();
-  // We still use context to update app state if needed, Supabase handles the session
-  const { login } = useContext(AuthContext); 
+  // Get the login function from our AuthContext
+  const { login } = useContext(AuthContext);
+
+  // Helper function to map role to the correct dashboard URL
+  const getRoleDashboard = (role) => {
+    switch (role) {
+      case 'student':
+        return '/attendance';      // Redirects students to the Attendance page
+      case 'warden':
+        return '/warden-dashboard'; // Redirects wardens to the Warden Dashboard
+      case 'admin':
+        return '/admin-dashboard';
+      case 'caretaker':
+        return '/dashboard';
+      default:
+        return '/dashboard';
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -174,38 +191,24 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      // --- Use Supabase Auth Client directly ---
-      const { data, error: signInError } = await supabase.auth.signInWithPassword({
-        email: identifier, // Supabase Auth requires email
-        password: password,
-      });
+      // 1. Call the login function from AuthContext.
+      const user = await login(identifier, password);
 
-      if (signInError) {
-        throw signInError; // Let catch block handle Supabase errors
-      }
-
-      // Supabase login successful. The onAuthStateChange listener in AuthContext
-      // will automatically update the global user state. 
-      // We call login here just in case immediate state update is needed, though it might be redundant.
-      if (data.session && data.user) {
-         login(data.session.access_token, data.user); 
-      }
-       
-      // --- Navigation ---
-      // Navigate to the main dashboard after Supabase confirms login. 
-      // The dashboard or layout components should handle role-specific UI.
-      navigate('/dashboard'); 
+      // 2. Now that we have the user and their role, we can navigate.
+      const destination = getRoleDashboard(user.role);
+      navigate(destination);
 
     } catch (err) {
+      // The login function in AuthContext will throw an error if Supabase or profile fetch fails
       console.error('Login failed:', err);
-      // Use the error message from Supabase if available
+      // Use err.message which is returned from the AuthContext login function
       setError(err.message || 'Login failed. Please check your credentials.'); 
     } finally {
       setLoading(false);
     }
   };
 
-  // --- JSX Structure remains exactly the same ---
+  // --- JSX Structure ---
   return (
     <>
       <LoginPageStyles />
@@ -219,16 +222,15 @@ export default function LoginPage() {
             <p className="welcome-text">Welcome back! Please login to your account.</p>
             <form className="login-form" onSubmit={handleSubmit}>
               <div className="form-group">
-                {/* Changed label for clarity since Supabase uses email */}
                 <label htmlFor="identifier">Email</label>
                 <input 
-                  type="text" // Keep as text to allow email format
+                  type="text" 
                   id="identifier" 
                   name="identifier" 
                   placeholder="user@iiitkottayam.ac.in" 
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
-                  required // Added required attribute
+                  required
                 />
               </div>
               <div className="form-group">
@@ -240,7 +242,7 @@ export default function LoginPage() {
                   placeholder="••••••••••" 
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  required // Added required attribute
+                  required
                 />
               </div>
               <div className="form-options">
@@ -263,4 +265,3 @@ export default function LoginPage() {
     </>
   );
 }
-

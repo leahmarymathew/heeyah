@@ -1,14 +1,22 @@
-
 import express from 'express';
-import { getAllRooms, createRoom } from '../controllers/roomController.js';
+// Make sure to import all functions
+import { 
+    getAllRooms, 
+    createRoom, 
+    getRoomLayout, 
+    getRoomDetails 
+} from '../controllers/roomController.js';
 import { protectAndFetchProfile, checkRole } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// Anyone who is logged in can view rooms
-router.get('/', protectAndFetchProfile, getAllRooms);
+// --- Admin-Only Routes ---
+router.get('/', protectAndFetchProfile, checkRole(['warden', 'admin']), getAllRooms);
+router.post('/', protectAndFetchProfile, checkRole(['admin']), createRoom);
 
-// Only wardens or admins can create new rooms
-router.post('/', protectAndFetchProfile, checkRole(['warden', 'admin']), createRoom);
+// --- Routes for Room Allocation Page (Student/Warden/Admin) ---
+router.get('/layout', protectAndFetchProfile, checkRole(['student', 'warden', 'admin']), getRoomLayout);
+router.get('/layout/:id', protectAndFetchProfile, checkRole(['student', 'warden', 'admin']), getRoomDetails);
 
 export default router;
+

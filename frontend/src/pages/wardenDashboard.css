@@ -1,3 +1,11 @@
+/* src/pages/wardenDashboard.css */
+*{
+  font-family: Roboto;
+}
+.wrapper{
+  display: flex;
+}
+
 .stdReport {
   /* Improved gradient and card appearance */
   background: linear-gradient(135deg, #7b61ff 0%, #9747ff 100%);
@@ -5,7 +13,7 @@
   padding: 30px;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15); /* Stronger shadow */
   margin-top: 20px;
-  margin-left: 60px;
+  /* CORRECTION: Removed margin-left: 60px; to avoid double padding from .main-content-wrapper */
   width: 450px; /* Adjusted width */
   /* Removed fixed height */
   box-sizing: border-box;
@@ -20,8 +28,8 @@ h2 {
 
 /* List Styling */
 .stdReport ul {
-  list-style: none;
-  padding: 0;
+  list-style: none; /* Already handles the padding/style for Student Reports */
+  padding: 0; 
   margin-bottom: 20px;
 }
 
@@ -56,10 +64,85 @@ h2 {
   font-weight: 600;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   margin-top: 15px;
+  width: 60%;
   transition: all 0.3s ease;
 }
 
 .btnInsights:hover {
   background-color: #f0f0f0;
   box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
+}
+
+.leaves{
+  padding-top: 35px;
+}
+.leaveHead{
+  color: black;
+}
+.lists{
+  padding: 0; /* Removes default left gap on Leave Requests UL */
+  padding-bottom: 15px;
+}
+.leaveItem{
+  display: flex;
+  gap: 45px;
+  justify-content: center;
+  align-items: center;
+}
+.info{
+  line-height: 5px;
+}
+.appro{
+  width:fit-content;
+    padding: 12px 25px;
+}
+.alls{
+  background-color: #2655B6;
+  width: 70%;
+}
+.hrline{
+  margin-left: 180px;
+}
+
+
+.complaints{
+  margin-right: 250px;
+}
+.compItem{
+  display: flex;
+  gap: 45px;
+  /* FIX: Align items to the start (left) instead of centering them */
+  justify-content: flex-start; 
+  align-items: center;
+}
+.cinfo{
+  line-height: 5px;
+}
+.clists{
+  padding: 0;
+  margin: 0;
+  list-style: none; /* Ensures the left gap is completely removed for complaints UL */
+}
+.complaints{
+  color: black;
+  padding-top: 10px;
+}
+.status{
+  background-color: #5EB7E4;
+  color: white;
+  display: flex;
+  align-items: center; /* Vertically center the text */
+  justify-content: center; /* Horizontally center the text */
+  padding: 4px 16px; /* Reduced vertical padding for a cleaner look */
+  height: fit-content;
+  border-radius: 20px;
+  min-width: 80px; /* Added min-width for consistency */
+}
+
+/* NEW: Style the <p> tag inside the status div to remove its default margins */
+.status p {
+  margin: 0; 
+  padding: 0;
+  font-size: 14px; 
+  font-weight: 600;
 }
