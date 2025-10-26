@@ -110,7 +110,7 @@ h2 {
 }
 .compItem{
   display: flex;
-  gap: 45px;
+  gap: 180px;
   /* FIX: Align items to the start (left) instead of centering them */
   justify-content: flex-start; 
   align-items: center;
