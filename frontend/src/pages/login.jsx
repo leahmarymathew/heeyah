@@ -1,6 +1,5 @@
 import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../supabase'; // Supabase client
 import { AuthContext } from '../context/AuthContext';
 
 import loginIllustration from '../assets/login-illustration.png';
@@ -61,7 +60,7 @@ const LoginPageStyles = () => (
       margin-bottom: 8px;
     }
 
-    .login-form input[type="text"],
+    .login-form input[type="email"],
     .login-form input[type="password"] {
       width: 100%;
       padding: 12px 16px;
@@ -72,7 +71,7 @@ const LoginPageStyles = () => (
       transition: border-color 0.2s, box-shadow 0.2s;
     }
 
-    .login-form input[type="text"]:focus,
+    .login-form input[type="email"]:focus,
     .login-form input[type="password"]:focus {
       outline: none;
       border-color: #3751FE;
@@ -100,6 +99,7 @@ const LoginPageStyles = () => (
 
     .login-button {
       width: 100%;
+      padding: 14px;
       font-size: 16px;
       font-weight: 700;
       color: #fff;
@@ -154,7 +154,7 @@ const LoginPageStyles = () => (
 );
 
 export default function LoginPage() {
-  const [identifier, setIdentifier] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -162,47 +162,47 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const { login } = useContext(AuthContext);
 
+  // Helper function to redirect based on user role
+  const redirectUser = (user) => {
+    switch (user.role) {
+      case 'student':
+        navigate('/attendance');
+        break;
+      case 'warden':
+        navigate('/warden-dashboard');
+        break;
+      case 'admin':
+        navigate('/admin-dashboard');
+        break;
+      default:
+        navigate('/dashboard');
+        break;
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
     try {
-      // 1️⃣ Sign in
-      const { data, error: signInError } = await supabase.auth.signInWithPassword({
-        email: identifier,
-        password: password,
-      });
-      if (signInError) throw signInError;
-      if (!data.session || !data.user) throw new Error('Login failed: No session returned.');
-
-      const token = data.session.access_token;
-
-      // 2️⃣ Store token
-      localStorage.setItem('authToken', token);
-
-      // 3️⃣ Fetch student profile for roll_no
-      const { data: profile, error: profileError } = await supabase
-        .from('student')
-        .select('roll_no')
-        .eq('user_id', data.user.id)
-        .single();
-
-      if (profileError || !profile?.roll_no) {
-        throw new Error('Student profile not found. Cannot retrieve roll number.');
+      if (!email) {
+        throw new Error('Please enter your email');
       }
 
-      // 4️⃣ Store roll_no
-      localStorage.setItem('roll_no', profile.roll_no);
-
-      // 5️⃣ Update context
-      login(token, data.user);
-
-      // 6️⃣ Navigate
-      navigate('/dashboard');
+      console.log('Attempting simple login for:', email);
+      
+      // Use our simple login system
+      const userData = await login(email, password);
+      
+      console.log('Login successful:', userData);
+      
+      // Redirect based on user role
+      redirectUser(userData);
+      
     } catch (err) {
       console.error('Login failed:', err);
-      setError(err.message || 'Login failed. Please check your credentials.');
+      setError(err.message || 'Login failed. Please check your email.');
     } finally {
       setLoading(false);
     }
@@ -221,14 +221,14 @@ export default function LoginPage() {
             <p className="welcome-text">Welcome back! Please login to your account.</p>
             <form className="login-form" onSubmit={handleSubmit}>
               <div className="form-group">
-                <label htmlFor="identifier">Email</label>
+                <label htmlFor="email">Email</label>
                 <input
-                  type="text"
-                  id="identifier"
-                  name="identifier"
+                  type="email"
+                  id="email"
+                  name="email"
                   placeholder="user@iiitkottayam.ac.in"
-                  value={identifier}
-                  onChange={(e) => setIdentifier(e.target.value)}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
                 />
               </div>
@@ -241,7 +241,6 @@ export default function LoginPage() {
                   placeholder="••••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  required
                 />
               </div>
               <div className="form-options">

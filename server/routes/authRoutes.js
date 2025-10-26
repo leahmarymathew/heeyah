@@ -5,9 +5,21 @@ import express from 'express';
 // We remove the 'loginUser' import because it doesn't exist anymore.
 // We *do* need the middleware and a new controller function for fetching user data.
 import { protectAndFetchProfile } from '../middleware/authMiddleware.js';
-import { findUserProfile } from '../controllers/authController.js';
+import { findUserProfile, simpleLogin } from '../controllers/authController.js';
 
 const router = express.Router();
+
+// @desc    Simple login - no complex authentication
+// @route   POST /api/auth/simple-login
+// @access  Public
+router.post('/simple-login', simpleLogin);
+
+// @desc    Test endpoint to check if server is working
+// @route   GET /api/auth/test
+// @access  Public
+router.get('/test', (req, res) => {
+    res.json({ message: 'Server is working!', timestamp: new Date().toISOString() });
+});
 
 // @desc    Get the profile of the currently logged-in user
 // @route   GET /api/auth/me

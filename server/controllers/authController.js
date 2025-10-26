@@ -61,3 +61,80 @@ export const findUserProfile = async (userId) => {
     return null;
 };
 
+/**
+ * @desc Ultra-simple login - just check if user exists in database tables by email
+ * @route POST /api/auth/simple-login
+ * @access Public
+ */
+export const simpleLogin = async (req, res) => {
+    const { email, password } = req.body;
+
+    if (!email) {
+        return res.status(400).json({ 
+            success: false, 
+            message: 'Email is required' 
+        });
+    }
+
+    try {
+        let userProfile = null;
+
+        // Check student table first (by email pattern or direct lookup)
+        const { data: students, error: studentError } = await supabase
+            .from('student')
+            .select('*');
+
+        if (!studentError && students) {
+            // Find student by checking auth users
+            const { data: authUsers } = await supabase.auth.admin.listUsers();
+            const authUser = authUsers?.users?.find(u => u.email === email);
+            
+            if (authUser) {
+                const student = students.find(s => s.user_id === authUser.id);
+                if (student) {
+                    userProfile = { ...student, role: 'student', email: authUser.email };
+                }
+            }
+        }
+
+        // If not found in students, check warden table
+        if (!userProfile) {
+            const { data: wardens, error: wardenError } = await supabase
+                .from('warden')
+                .select('*');
+
+            if (!wardenError && wardens) {
+                const { data: authUsers } = await supabase.auth.admin.listUsers();
+                const authUser = authUsers?.users?.find(u => u.email === email);
+                
+                if (authUser) {
+                    const warden = wardens.find(w => w.user_id === authUser.id);
+                    if (warden) {
+                        userProfile = { ...warden, role: 'warden', email: authUser.email };
+                    }
+                }
+            }
+        }
+
+        if (!userProfile) {
+            return res.status(404).json({ 
+                success: false, 
+                message: 'User not found. Please check your email.' 
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Login successful',
+            user: userProfile
+        });
+
+    } catch (error) {
+        console.error('Simple login error:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Login failed. Please try again.' 
+        });
+    }
+};
+

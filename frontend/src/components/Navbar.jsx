@@ -107,8 +107,6 @@
 import React, { useContext } from 'react';
 import { NavLink, Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBox } from '@fortawesome/free-solid-svg-icons'; // Lost & Found icon
 
 function Navbar() {
   const { user, logout } = useContext(AuthContext);
@@ -170,11 +168,13 @@ function Navbar() {
             {/* Icon Button for Student Lost & Found */}
             {user?.role === 'student' && (
               <button
-                onClick={() => navigate('/student-lost-found')}
+                onClick={() => navigate('/lost-and-found')}
                 className="text-gray-500 hover:text-primary-blue transition-colors p-2 rounded-full hover:bg-gray-100"
-                title="Student Lost & Found"
+                title="Lost & Found"
               >
-                <FontAwesomeIcon icon={faBox} size="lg" />
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                </svg>
               </button>
             )}
           </div>
