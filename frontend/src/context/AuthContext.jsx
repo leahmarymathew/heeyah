@@ -1,6 +1,4 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { supabase } from '../supabase'; // Import the Supabase client
-import axios from 'axios'; // Import axios for API calls
 
 // Create the context
 export const AuthContext = createContext(null);
@@ -23,117 +21,82 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // This effect runs once when the app loads
-        const initializeSession = async () => {
-            // 1. Check if a session already exists with Supabase
-            const { data: { session }, error } = await supabase.auth.getSession();
+        // Check for existing session in localStorage
+        const initializeSession = () => {
+            const savedUser = localStorage.getItem('mockUser');
+            const savedToken = localStorage.getItem('mockToken');
             
-            if (session) {
-                const authToken = session.access_token;
-                setToken(authToken);
-
-                try {
-                    // 2. If session exists, fetch the full user profile from our backend
-                    const response = await axios.get('http://localhost:3001/api/auth/me', {
-                        headers: { Authorization: `Bearer ${authToken}` }
-                    });
-                    
-                    if (response.data) {
-                        setUser(response.data); // Set the full profile (with role, roll_no, etc.)
-                    } else {
-                        // User is in Supabase Auth but not in our profile tables
-                        throw new Error('User profile not found.');
-                    }
-                } catch (err) {
-                    console.error("Failed to fetch user profile:", err);
-                    // If profile fetch fails, log them out
-                    await supabase.auth.signOut();
-                    setUser(null);
-                    setToken(null);
-                }
-            } else {
-                // No session
-                setUser(null);
-                setToken(null);
+            if (savedUser && savedToken) {
+                setUser(JSON.parse(savedUser));
+                setToken(savedToken);
+                console.log('✅ Session restored from localStorage');
             }
             setLoading(false);
         };
 
         initializeSession();
-
-        // 3. Listen for future auth state changes (login/logout)
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(
-            async (event, newSession) => {
-                setLoading(true);
-                const authToken = newSession?.access_token || null;
-                setToken(authToken);
-
-                if (event === 'SIGNED_IN' && authToken) {
-                    try {
-                        // When a new login is detected, fetch the full profile
-                        const response = await axios.get('http://localhost:3001/api/auth/me', {
-                            headers: { Authorization: `Bearer ${authToken}` }
-                        });
-                        setUser(response.data);
-                    } catch (err) {
-                        console.error("Failed to fetch user profile after SIGNED_IN:", err);
-                        setUser(null);
-                    }
-                } else if (event === 'SIGNED_OUT') {
-                    setUser(null);
-                }
-                setLoading(false);
-            }
-        );
-
-        // Cleanup listener on unmount
-        return () => subscription?.unsubscribe();
     }, []);
 
     // ... (login and logout functions to follow) ...
         // ... (state and useEffect from Part 2) ...
 
-    // The login function handles Supabase login and fetches user profile
+    // Simple mock login function for development
     const login = async (email, password) => {
-        const { data, error } = await supabase.auth.signInWithPassword({
-            email,
-            password,
-        });
+        // Simulate API delay
+        await new Promise(resolve => setTimeout(resolve, 500));
 
-        if (error) {
-            throw error;
+        // Mock validation - accept any password for development
+        if (!email || !password) {
+            throw new Error('Email and password are required');
         }
 
-        // Fetch user profile immediately after successful login
-        try {
-            const response = await axios.get('http://localhost:3001/api/auth/me', {
-                headers: { Authorization: `Bearer ${data.session.access_token}` }
-            });
-            
-            if (response.data) {
-                setUser(response.data);
-                setToken(data.session.access_token);
-                return response.data; // Return user profile with role
-            } else {
-                throw new Error('User profile not found.');
-            }
-        } catch (err) {
-            console.error("Failed to fetch user profile:", err);
-            await supabase.auth.signOut();
-            throw new Error('Failed to fetch user profile. Please try again.');
+        console.log('✅ Mock login successful');
+        console.log('Email:', email);
+
+        // Determine role based on email pattern
+        let role = 'student'; // default
+        if (email.includes('warden')) {
+            role = 'warden';
+        } else if (email.includes('admin')) {
+            role = 'admin';
+        } else if (email.includes('caretaker')) {
+            role = 'caretaker';
         }
+
+        // Create user profile from email
+        const userProfile = {
+            user_id: 'mock-' + Date.now(),
+            email: email,
+            name: email.split('@')[0],
+            role: role,
+            roll_no: role === 'student' ? 'STU001' : null
+        };
+
+        console.log('✅ Created user profile:', userProfile);
+
+        // Save to localStorage for persistence
+        localStorage.setItem('mockUser', JSON.stringify(userProfile));
+        localStorage.setItem('mockToken', 'mock-token-' + Date.now());
+
+        setUser(userProfile);
+        setToken('mock-token-' + Date.now());
+
+        return userProfile;
     };
 
     const logout = async () => {
         setLoading(true);
-        const { error } = await supabase.auth.signOut();
-        if (error) {
-            console.error("Error logging out:", error);
-        }
-        // The 'onAuthStateChange' listener will handle setting user/token to null.
+        
+        // Clear localStorage
+        localStorage.removeItem('mockUser');
+        localStorage.removeItem('mockToken');
+        
+        // Clear state
         setToken(null);
         setUser(null);
         setLoading(false);
+        
+        console.log('✅ Logged out successfully');
     };
 
     // This is the value that all components in your app can access

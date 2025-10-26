@@ -320,144 +320,149 @@
 // }
 
 // export default WardenLeave;
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { supabase } from '../../supabase';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import WardenLayout from '../../components/WardenLayout';
 import back from "../../assets/Arrow 1.png";
 import './WardenLeave.css';
 
-const API_BASE_URL = 'http://localhost:3001';
-
 function WardenLeave() {
-  const [leaveRequests, setLeaveRequests] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-
-  const fetchLeaveRequests = async () => {
-    setLoading(true);
-    setError('');
-
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) {
-        setError("No valid session. Please log in.");
-        setLoading(false);
-        return;
-      }
-
-      const token = session.access_token;
-
-      const res = await axios.get(`${API_BASE_URL}/api/leave`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      setLeaveRequests(res.data);
-    } catch (err) {
-      console.error(err);
-      setError(err.response?.data?.error || err.message || "Failed to fetch leave requests");
-    } finally {
-      setLoading(false);
+  const navigate = useNavigate();
+  
+  // Mock data for demonstration
+  const [leaveRequests, setLeaveRequests] = useState([
+    {
+      id: 1,
+      name: 'Abhishek R',
+      rollNo: '2023BCY0049',
+      startDate: '2025-02-01',
+      endDate: '2025-02-04',
+      reason: 'Going home for family function',
+      status: 'pending'
+    },
+    {
+      id: 2,
+      name: 'Priya Sharma',
+      rollNo: '2022BME0012',
+      startDate: '2025-01-28',
+      endDate: '2025-01-29',
+      reason: 'Attending wedding',
+      status: 'approved'
+    },
+    {
+      id: 3,
+      name: 'Karan Singh',
+      rollNo: '2024BEE0088',
+      startDate: '2025-02-05',
+      endDate: '2025-02-05',
+      reason: 'Medical appointment',
+      status: 'pending'
+    },
+    {
+      id: 4,
+      name: 'Anjali Mehta',
+      rollNo: '2023BCS0150',
+      startDate: '2025-01-25',
+      endDate: '2025-01-27',
+      reason: 'Personal reasons',
+      status: 'rejected'
+    },
+    {
+      id: 5,
+      name: 'Rohit Kumar',
+      rollNo: '2023BCS0019',
+      startDate: '2025-02-10',
+      endDate: '2025-02-12',
+      reason: 'Family function',
+      status: 'pending'
     }
+  ]);
+
+  const handleBack = () => {
+    navigate('/warden-dashboard');
   };
 
-  useEffect(() => {
-    fetchLeaveRequests();
-  }, []);
-
-  // Approve or Reject leave
-  const handleUpdateStatus = async (leaveId, action) => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) {
-        setError("No valid session. Please log in.");
-        return;
-      }
-      const token = session.access_token;
-
-      const res = await axios.patch(
-        `${API_BASE_URL}/api/leave/${leaveId}/status`,
-        { action },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      // Update UI optimistically
-      setLeaveRequests((prev) =>
-        prev.map((req) =>
-          req.leave_id === leaveId ? { ...req, status: action === 'approve' ? 'approved' : 'rejected', approved_by: action === 'approve' ? 'warden' : null } : req
-        )
-      );
-    } catch (err) {
-      console.error(err);
-      setError(err.response?.data?.error || err.message || `Failed to ${action} leave`);
-    }
+  const handleUpdateStatus = (id, newStatus) => {
+    setLeaveRequests(prev => 
+      prev.map(req => 
+        req.id === id ? { ...req, status: newStatus } : req
+      )
+    );
   };
 
   return (
-    <div className="main">
-      <button type="button" className="image-button">
-        <img src={back} alt="Back" width="30px" />
-      </button>
+    <WardenLayout>
+      <div className="warden-leave-main">
+        <div className="warden-leave-header">
+          <button type="button" className="back-button" onClick={handleBack}>
+            <img src={back} alt="Back" width="24px" />
+            <span>Back to Dashboard</span>
+          </button>
+          <h1 className="page-title">Leave Requests</h1>
+        </div>
 
-      <div className="warden-leave-container">
-        <p className='head'>Leave Requests</p>
-
-        {loading && <p>Loading leave requests...</p>}
-        {error && <p className="error-text">{error}</p>}
-        {!loading && !error && leaveRequests.length === 0 && <p>No leave requests found.</p>}
-
-        {!loading && !error && leaveRequests.length > 0 && (
-          <table>
-            <thead>
-              <tr>
-                <th className='applicant heading'>Applicant</th>
-                <th className='details1 heading'>Details</th>
-                <th className='status heading'>Status</th>
-                <th className='actions heading'>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {leaveRequests.map((request) => {
-                const status = request.status || (!request.approved_by ? 'pending' : 'approved');
-                return (
-                  <tr key={request.leave_id}>
-                    <td className='applicant'>
-                      <strong>{request.STUDENT?.name || request.roll_no}</strong> <br />
-                      Roll No: {request.STUDENT?.roll_no || request.roll_no}
+        <div className="warden-leave-container">
+          <div className="table-container">
+            <table className="leave-table">
+              <thead>
+                <tr>
+                  <th>Applicant</th>
+                  <th>Details</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {leaveRequests.map((request) => (
+                  <tr key={request.id}>
+                    <td className="applicant-cell">
+                      <div className="applicant-info">
+                        <strong>{request.name}</strong>
+                        <span className="roll-no">Roll No: {request.rollNo}</span>
+                      </div>
                     </td>
-                    <td className='details1'>
-                      <strong>From:</strong> {new Date(request.leave_start_time).toLocaleDateString()} <br />
-                      <strong>To:</strong> {new Date(request.leave_end_time).toLocaleDateString()} <br />
-                      <strong>Reason:</strong> {request.reason}
+                    <td className="details-cell">
+                      <div className="leave-details">
+                        <div><strong>From:</strong> {request.startDate}</div>
+                        <div><strong>To:</strong> {request.endDate}</div>
+                        <div><strong>Reason:</strong> {request.reason}</div>
+                      </div>
                     </td>
-                    <td className='status'>{status.charAt(0).toUpperCase() + status.slice(1)}</td>
-                    <td className='actions'>
-                      {status === 'pending' && (
-                        <>
+                    <td className="status-cell">
+                      <span className={`status-badge status-${request.status}`}>
+                        {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                      </span>
+                    </td>
+                    <td className="actions-cell">
+                      {request.status === 'pending' ? (
+                        <div className="action-buttons">
                           <button 
-                            className='approve-button'
-                            onClick={() => handleUpdateStatus(request.leave_id, 'approve')}
+                            className="approve-btn"
+                            onClick={() => handleUpdateStatus(request.id, 'approved')}
                           >
                             Approve
                           </button>
                           <button 
-                            className='reject-button'
-                            onClick={() => handleUpdateStatus(request.leave_id, 'reject')}
+                            className="reject-btn"
+                            onClick={() => handleUpdateStatus(request.id, 'rejected')}
                           >
                             Reject
                           </button>
-                        </>
+                        </div>
+                      ) : (
+                        <span className={`final-status status-${request.status}`}>
+                          {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                        </span>
                       )}
-                      {status === 'approved' && <span className='status-approved'>Approved</span>}
-                      {status === 'rejected' && <span className='status-rejected'>Rejected</span>}
                     </td>
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        )}
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
-    </div>
+    </WardenLayout>
   );
 }
 

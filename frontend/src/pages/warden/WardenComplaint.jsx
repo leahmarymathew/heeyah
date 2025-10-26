@@ -58,80 +58,166 @@
 
 // export default WardenComplaint;
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
+import { useNavigate } from 'react-router-dom';
+import WardenLayout from '../../components/WardenLayout';
 import back from "../../assets/Arrow 1.png";
 import "./WardenComplaint.css";
-import {supabase} from "../../supabase.js"; // if using Supabase for auth
 
 function WardenComplaint() {
-  const [complaints, setComplaints] = useState([]);
+  const navigate = useNavigate();
+  
+  // Mock data for demonstration
+  const [complaints, setComplaints] = useState([
+    {
+      id: 1,
+      name: "Abhishek R",
+      rollNo: "2023BCY0049",
+      room: "301",
+      complaintType: "Electrical",
+      complaintDetails: "Fan is not working. It was making a loud noise and then stopped.",
+      status: "pending"
+    },
+    {
+      id: 2,
+      name: "Priya Sharma",
+      rollNo: "2022BME0012",
+      room: "105",
+      complaintType: "Plumbing",
+      complaintDetails: "The shower tap is broken and leaking continuously.",
+      status: "in-progress"
+    },
+    {
+      id: 3,
+      name: "Karan Singh",
+      rollNo: "2024BEE0088",
+      room: "212",
+      complaintType: "Carpentry",
+      complaintDetails: "My study table chair is broken. One of the legs is loose.",
+      status: "resolved"
+    },
+    {
+      id: 4,
+      name: "Anjali Mehta",
+      rollNo: "2023BCS0150",
+      room: "404",
+      complaintType: "Internet/Wi-Fi",
+      complaintDetails: "The Wi-Fi signal is very weak in my room. The LAN port is also not working.",
+      status: "in-progress"
+    },
+    {
+      id: 5,
+      name: "Rohan Verma",
+      rollNo: "2022BCE0031",
+      room: "G07",
+      complaintType: "Housekeeping",
+      complaintDetails: "Room hasn't been cleaned for two days. The dustbin is full.",
+      status: "pending"
+    },
+    {
+      id: 6,
+      name: "Aisha Begum",
+      rollNo: "2025BAR0005",
+      room: "110",
+      complaintType: "Electrical",
+      complaintDetails: "The main tube light is flickering constantly.",
+      status: "resolved"
+    }
+  ]);
 
-  useEffect(() => {
-    const fetchComplaints = async () => {
-      // Get Supabase session token
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token;
+  const handleBack = () => {
+    navigate('/warden-dashboard');
+  };
 
-      if (!token) return console.error("No token found");
-
-      try {
-        const res = await fetch("http://localhost:3001/api/requests", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (!res.ok) {
-          console.error("Error fetching complaints:", res.status);
-          return;
-        }
-
-        const data = await res.json();
-        setComplaints(data);
-      } catch (err) {
-        console.error("Fetch error:", err);
-      }
-    };
-
-    fetchComplaints();
-  }, []);
+  const handleUpdateStatus = (id, newStatus) => {
+    setComplaints(prev => 
+      prev.map(complaint => 
+        complaint.id === id ? { ...complaint, status: newStatus } : complaint
+      )
+    );
+  };
 
   return (
-    <div className="main">
-      <button className="image-button" onClick={() => window.history.back()}>
-        <img src={back} alt="Back" width="30px" />
-      </button>
+    <WardenLayout>
+      <div className="warden-complaint-main">
+        <div className="warden-complaint-header">
+          <button type="button" className="back-button" onClick={handleBack}>
+            <img src={back} alt="Back" width="24px" />
+            <span>Back to Dashboard</span>
+          </button>
+          <h1 className="page-title">Hostel Complaints</h1>
+        </div>
 
-      <div className="warden-complaint-container">
-        <p className="head">Hostel Complaints</p>
-        <table>
-          <thead>
-            <tr>
-              <th className="Student heading">Student</th>
-              <th className="room heading">Room</th>
-              <th className="details heading">Complaint Details</th>
-              <th className="status heading">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {complaints.map((c) => (
-              <tr key={c.request_id}>
-                <td className="Student">
-                  <strong>{c.student.name}</strong>
-                  <br />
-                  {c.student.roll_no}
-                </td>
-                <td className="room">{c.student.room_no}</td>
-                <td className="details">
-                  <strong>{c.request_type}:</strong> {c.description}
-                </td>
-                <td className="status">{c.status}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div className="warden-complaint-container">
+          <div className="table-container">
+            <table className="complaint-table">
+              <thead>
+                <tr>
+                  <th>Student</th>
+                  <th>Room</th>
+                  <th>Complaint Details</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {complaints.map((complaint) => (
+                  <tr key={complaint.id}>
+                    <td className="student-cell">
+                      <div className="student-info">
+                        <strong>{complaint.name}</strong>
+                        <span className="roll-no">{complaint.rollNo}</span>
+                      </div>
+                    </td>
+                    <td className="room-cell">
+                      <span className="room-number">{complaint.room}</span>
+                    </td>
+                    <td className="details-cell">
+                      <div className="complaint-details">
+                        <strong className="complaint-type">{complaint.complaintType}:</strong>
+                        <p className="complaint-description">{complaint.complaintDetails}</p>
+                      </div>
+                    </td>
+                    <td className="status-cell">
+                      <span className={`status-badge status-${complaint.status}`}>
+                        {complaint.status.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                      </span>
+                    </td>
+                    <td className="actions-cell">
+                      {complaint.status === 'pending' ? (
+                        <div className="action-buttons">
+                          <button 
+                            className="assign-btn"
+                            onClick={() => handleUpdateStatus(complaint.id, 'in-progress')}
+                          >
+                            Assign
+                          </button>
+                          <button 
+                            className="resolve-btn"
+                            onClick={() => handleUpdateStatus(complaint.id, 'resolved')}
+                          >
+                            Resolve
+                          </button>
+                        </div>
+                      ) : complaint.status === 'in-progress' ? (
+                        <button 
+                          className="resolve-btn"
+                          onClick={() => handleUpdateStatus(complaint.id, 'resolved')}
+                        >
+                          Mark Resolved
+                        </button>
+                      ) : (
+                        <span className="final-status">Completed</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
-    </div>
+    </WardenLayout>
   );
 }
 

@@ -1,9 +1,19 @@
 /* src/pages/wardenDashboard.css */
-*{
+* {
   font-family: Roboto;
 }
-.wrapper{
+
+.wrapper {
   display: flex;
+  padding: 20px;
+  gap: 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.leftSect {
+  flex: 1;
+  min-width: 450px;
 }
 
 .stdReport {
@@ -11,19 +21,31 @@
   background: linear-gradient(135deg, #7b61ff 0%, #9747ff 100%);
   border-radius: 12px;
   padding: 30px;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15); /* Stronger shadow */
-  margin-top: 20px;
-  /* CORRECTION: Removed margin-left: 60px; to avoid double padding from .main-content-wrapper */
-  width: 450px; /* Adjusted width */
-  /* Removed fixed height */
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+  margin-bottom: 30px;
+  width: 100%;
   box-sizing: border-box;
 }
-h2 {
+.stdReport h2 {
   color: white;
-  font-size: 30px; /* Reduced for better balance */
+  font-size: 30px;
   margin-top: 0;
   margin-bottom: 15px;
   font-weight: 700;
+}
+
+.leaveHead {
+  color: black;
+  font-size: 24px;
+  margin-bottom: 20px;
+  font-weight: 600;
+}
+
+.complaints h2 {
+  color: black;
+  font-size: 24px;
+  margin-bottom: 20px;
+  font-weight: 600;
 }
 
 /* List Styling */
@@ -73,8 +95,8 @@ h2 {
   box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
 }
 
-.leaves{
-  padding-top: 35px;
+.leaves {
+  margin-bottom: 20px;
 }
 .leaveHead{
   color: black;
@@ -83,40 +105,110 @@ h2 {
   padding: 0; /* Removes default left gap on Leave Requests UL */
   padding-bottom: 15px;
 }
-.leaveItem{
+.leaveItem {
   display: flex;
-  gap: 45px;
-  justify-content: center;
+  gap: 20px;
+  justify-content: space-between;
   align-items: center;
+  padding: 15px 0;
+  border-bottom: 1px solid #e5e7eb;
 }
-.info{
-  line-height: 5px;
+
+.leaveItem:last-child {
+  border-bottom: none;
 }
-.appro{
-  width:fit-content;
-    padding: 12px 25px;
+.info {
+  flex: 1;
 }
-.alls{
+
+.info h3 {
+  margin: 0 0 5px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.info p {
+  margin: 0;
+  font-size: 14px;
+  color: #666;
+}
+.appro {
+  width: fit-content;
+  padding: 8px 16px;
+  background-color: #10B981;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.3s;
+}
+
+.appro:hover {
+  background-color: #059669;
+}
+.alls {
   background-color: #2655B6;
+  color: white;
+  border: none;
+  padding: 12px 25px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
   width: 70%;
-}
-.hrline{
-  margin-left: 180px;
+  margin-top: 15px;
+  transition: background-color 0.3s;
 }
 
-
-.complaints{
-  margin-right: 250px;
+.alls:hover {
+  background-color: #1e4a9a;
 }
-.compItem{
+.hrline {
+  display: none; /* Hide the hr line since we're using flexbox gap */
+}
+
+.complaints {
+  flex: 1;
+  min-width: 400px;
+  padding-top: 10px;
+}
+.compItem {
   display: flex;
-  gap: 45px;
-  /* FIX: Align items to the start (left) instead of centering them */
-  justify-content: flex-start; 
+  gap: 20px;
+  justify-content: space-between;
   align-items: center;
+  padding: 15px 0;
+  border-bottom: 1px solid #e5e7eb;
 }
-.cinfo{
-  line-height: 5px;
+
+.compItem:last-child {
+  border-bottom: none;
+}
+
+.right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+}
+.cinfo {
+  flex: 1;
+}
+
+.cinfo h3 {
+  margin: 0 0 5px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.cinfo p {
+  margin: 0 0 3px 0;
+  font-size: 14px;
+  color: #666;
 }
 .clists{
   padding: 0;
@@ -139,10 +231,68 @@ h2 {
   min-width: 80px; /* Added min-width for consistency */
 }
 
-/* NEW: Style the <p> tag inside the status div to remove its default margins */
 .status p {
   margin: 0; 
   padding: 0;
   font-size: 14px; 
   font-weight: 600;
+}
+
+/* Status color variants */
+.status-resolved {
+  background-color: #10B981 !important; /* Green for resolved */
+}
+
+.status-pending {
+  background-color: #F59E0B !important; /* Orange for pending */
+}
+
+.status-progress {
+  background-color: #3B82F6 !important; /* Blue for in progress */
+}
+/* 
+Responsive design */
+@media (max-width: 1024px) {
+  .wrapper {
+    flex-direction: column;
+    padding: 15px;
+  }
+  
+  .leftSect {
+    min-width: auto;
+  }
+  
+  .complaints {
+    min-width: auto;
+  }
+  
+  .stdReport {
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .wrapper {
+    padding: 10px;
+  }
+  
+  .stdReport {
+    padding: 20px;
+  }
+  
+  .leaveItem {
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  
+  .compItem {
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  
+  .alls {
+    width: 100%;
+  }
 }
