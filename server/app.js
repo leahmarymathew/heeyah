@@ -6,7 +6,7 @@ const app = express();
 
 // --- Core Middleware ---
 app.use(cors({
-  origin: 'http://localhost:5173',  
+  origin: ['http://localhost:5173', 'http://localhost:5174'],  
   credentials: true,                
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -36,7 +36,9 @@ import hostelRoutes from './routes/hostelRoutes.js';
 import reportsRoutes from './routes/reportsRoutes.js';
 import lostAndFoundRoutes from './routes/lostAndFoundRoutes.js';
 
+console.log('=== REGISTERING /api/auth ROUTES ===');
 app.use('/api/auth', authRoutes);
+console.log('=== AUTH ROUTES REGISTERED ===');
 app.use('/api/rooms', roomRoutes);
 app.use('/api/students', studentRoutes);
 app.use('/api/wardens', wardenRoutes);

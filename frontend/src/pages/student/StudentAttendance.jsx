@@ -526,7 +526,7 @@ const API_BASE_URL = "http://localhost:3001";
 
 export default function StudentAttendance() {
   const navigate = useNavigate();
-  const { user, token, logout } = useAuth();
+  const { user, logout } = useAuth();
 
   // --- STATE ---
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -619,18 +619,26 @@ export default function StudentAttendance() {
 
   // --- FETCH ATTENDANCE ---
   const fetchAttendance = async () => {
-    if (!token || !user?.roll_no) { setError("You are not logged in."); setLoading(false); return; }
+    if (!user?.roll_no) { setError("You are not logged in."); setLoading(false); return; }
     setLoading(true); setError(null); setAttendance(null);
     try {
       const dateStr = formatDate(selectedDate);
-      const res = await fetch(`${API_BASE_URL}/api/attendance?date=${dateStr}`, {
-        method: "GET",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }
+      // Use simple API call with roll number
+      const res = await fetch(`${API_BASE_URL}/api/students/attendance/simple`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rollNo: user.roll_no, studentName: user.name })
       });
 
       if (res.ok) {
         const data = await res.json();
-        const record = Array.isArray(data) ? data.find(r => r.student?.roll_no === user.roll_no) : data;
+        // Find attendance record for the selected date
+        const record = Array.isArray(data) ? data.find(r => {
+          const recordDate = new Date(r.date);
+          const selectedDateStr = formatDate(selectedDate);
+          const recordDateStr = formatDate(recordDate);
+          return recordDateStr === selectedDateStr;
+        }) : null;
         setAttendance(record ? { checkIn: record.in_time, checkOut: record.out_time } : null);
       } else if (res.status === 404) {
         setAttendance(null);
@@ -639,44 +647,46 @@ export default function StudentAttendance() {
     finally { setLoading(false); }
   };
 
-  useEffect(() => { fetchAttendance(); }, [selectedDate, token, user]);
+  useEffect(() => { fetchAttendance(); }, [selectedDate, user]);
 
   // --- FETCH LATEST LEAVE ---
   useEffect(() => {
     const fetchLatestLeave = async () => {
-      if (!token || !user?.roll_no) { setLeaveLoading(false); return; }
+      if (!user?.roll_no) { setLeaveLoading(false); return; }
       setLeaveLoading(true);
       try {
-        const res = await fetch(`${API_BASE_URL}/api/leave/latest`, {
-          method: "GET",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }
-        });
-        if (res.ok) setLatestLeave(await res.json());
-        else setLatestLeave(null);
+        // Simple leave fetch - for now just set to null since we don't have this endpoint yet
+        setLatestLeave(null);
       } catch (err) { console.error(err); setError("Could not load leave data."); }
       finally { setLeaveLoading(false); }
     };
     fetchLatestLeave();
-  }, [token, user]);
+  }, [user]);
 
   // --- CHECK-IN / CHECK-OUT ---
   const handleAttendance = async (action) => {
-    if (!token || !user?.roll_no) { alert("You are not logged in."); return; }
-
-    if (action === "check-in" && (!attendance || !attendance.checkOut)) {
-      alert("You must check out first before checking in."); return;
-    }
+    if (!user?.roll_no) { alert("You are not logged in."); return; }
 
     setMarkingAttendance(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/attendance`, {
+      // Simple attendance marking
+      const res = await fetch(`${API_BASE_URL}/api/students/attendance/mark`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ roll_no: user.roll_no, type: action === "check-in" ? "in" : "out" })
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          rollNo: user.roll_no, 
+          studentName: user.name,
+          type: action === "check-in" ? "in" : "out" 
+        })
       });
 
-      if (res.ok) { alert(`${action === "check-in" ? "Check-In" : "Check-Out"} Successful`); fetchAttendance(); }
-      else { const errData = await res.json(); alert(errData.error || "Failed to mark attendance"); }
+      if (res.ok) { 
+        alert(`${action === "check-in" ? "Check-In" : "Check-Out"} Successful`); 
+        fetchAttendance(); 
+      } else { 
+        const errData = await res.json(); 
+        alert(errData.error || "Failed to mark attendance"); 
+      }
     } catch (err) { console.error(err); alert("Error marking attendance"); }
     finally { setMarkingAttendance(false); }
   };

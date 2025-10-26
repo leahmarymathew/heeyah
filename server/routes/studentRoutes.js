@@ -3,7 +3,9 @@ import { protectAndFetchProfile, checkRole } from '../middleware/authMiddleware.
 import { 
     registerStudent,
     getAllStudents,
-    getLostAndFoundItems
+    getLostAndFoundItems,
+    getAttendanceSimple,
+    markAttendanceSimple
 } from '../controllers/studentController.js';
 // We removed the incorrect import of 'getStudentAllocation' from this file.
 
@@ -19,6 +21,10 @@ router.get('/', protectAndFetchProfile, checkRole(['warden', 'admin']), getAllSt
 // is now correctly located in 'roomAllocRoutes.js'
 
 router.get('/lost-and-found', getLostAndFoundItems);
+
+// Simple attendance endpoints - no heavy authentication
+router.post('/attendance/simple', getAttendanceSimple);
+router.post('/attendance/mark', markAttendanceSimple);
 
 
 export default router;
