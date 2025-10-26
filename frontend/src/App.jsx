@@ -18,6 +18,7 @@ import WardenRoomManagement from './pages/WardenRoomManagement';
 
 import RoomAllocationPage from './pages/roomAllocation.jsx';
 import RoleBasedRedirect from './components/RoleBasedRedirect.jsx';
+import StudentLostFoundMessages from './pages/student/StudentLostFoundMessages.jsx';
 
 
 function App() {
@@ -45,10 +46,10 @@ function App() {
 
         <Route path="/attendance" element={<StudentAttendance />} /> 
         <Route path="/student/leave-form" element={<StudentLeave />} />
+        <Route path="/student-lost-found" element={<StudentLostFoundMessages />} /> 
         <Route path="/warden-attendence" element={<WardenAttendance />} /> 
         <Route path="/warden-complaint" element={<WardenComplaint/>} /> 
         <Route path="/warden-leave" element={<WardenLeave/>} /> 
-
         <Route path="/room-allocation" element={<RoomAllocationPage />} />
         
 

@@ -2,10 +2,10 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../supabase';
 import axios from 'axios';
 
-// Create the context
+// Create AuthContext
 export const AuthContext = createContext(null);
 
-// Custom hook to use the AuthContext
+// Custom hook
 export const useAuth = () => {
     const context = useContext(AuthContext);
     if (!context) {
@@ -19,6 +19,9 @@ export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
+    // ------------------------------
+    // INITIAL SESSION CHECK
+    // ------------------------------
     useEffect(() => {
         // Check for existing session
         const initializeSession = async () => {
@@ -43,7 +46,7 @@ export const AuthProvider = ({ children }) => {
             }
         };
 
-        initializeSession();
+        initializeAuth();
 
         // Listen for auth changes
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -103,6 +106,30 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    // ------------------------------
+    // LOGIN FUNCTION
+    // ------------------------------
+    const login = async (email, password) => {
+        setLoading(true);
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+        if (error) {
+            setLoading(false);
+            console.error("Login failed:", error.message);
+            throw new Error(error.message || "Login failed");
+        }
+
+        const token = data.session?.access_token;
+        if (token) {
+            await fetchUserProfile(token);
+            setSession(data.session);
+        }
+        setLoading(false);
+    };
+
+    // ------------------------------
+    // LOGOUT FUNCTION
+    // ------------------------------
     const logout = async () => {
         setLoading(true);
         
@@ -114,14 +141,17 @@ export const AuthProvider = ({ children }) => {
         
         setToken(null);
         setUser(null);
+        setSession(null);
         setLoading(false);
         
         console.log('✅ Logged out successfully');
     };
 
     const value = {
-        token,
-        user,
+        user,                 // Full profile
+        session,              // Supabase session
+        token: session?.access_token || null,
+        isAuthenticated: !!session?.access_token,
         loading,
         login,
         logout,

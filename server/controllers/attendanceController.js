@@ -17,7 +17,7 @@ export const markAttendance = async (req, res) => {
 
     try {
         const { data: existingRecord, error: findError } = await supabase
-            .from('attendance')
+            .from('attendance') 
             .select('*')
             .eq('roll_no', roll_no)
             .eq('date', today)
@@ -26,28 +26,37 @@ export const markAttendance = async (req, res) => {
         if (findError && findError.code !== 'PGRST116') throw findError;
 
         if (existingRecord) {
+            // Update the existing record
             const updateField = type === 'in' ? 'in_time' : 'out_time';
             const { data, error } = await supabase
-                .from('attendance')
+                .from('attendance') 
                 .update({ [updateField]: new Date().toISOString() })
                 .eq('attendance_id', existingRecord.attendance_id)
                 .select().single();
 
             if (error) throw error;
             res.status(200).json({ message: 'Attendance updated', record: data });
+
         } else {
-            if (type === 'out') {
-                return res.status(400).json({ error: 'Cannot mark Out time for a new record.' });
-            }
+            // Create a new record, allow both in/out as first action
             const attendance_id = `ATT-${uuidv4().slice(0, 6).toUpperCase()}`;
+            const insertData = {
+                attendance_id,
+                roll_no,
+                date: today,
+                in_time: type === 'in' ? new Date().toISOString() : null,
+                out_time: type === 'out' ? new Date().toISOString() : null
+            };
+
             const { data, error } = await supabase
-                .from('attendance')
-                .insert({ attendance_id, roll_no, date: today, in_time: new Date().toISOString() })
+                .from('attendance') 
+                .insert(insertData)
                 .select().single();
 
             if (error) throw error;
             res.status(201).json({ message: 'Attendance marked', record: data });
         }
+
     } catch (error) {
         console.error('Error in markAttendance:', error.message);
         res.status(500).json({ error: 'Internal server error in markAttendance.' });
@@ -62,50 +71,43 @@ export const markAttendance = async (req, res) => {
  */
 export const getAttendance = async (req, res) => {
     const { date } = req.query;
-    // --- THIS IS THE FIX ---
-    // Read from req.profile (which is attached by protectAndFetchProfile)
-    // instead of req.user.
-    const userProfile = req.profile; 
+    const { userId, role } = req.user;
 
-    if (!date) {
-        return res.status(400).json({ error: 'Date query parameter is required.' });
-    }
-    
-    // Safety check - ensures profile was attached correctly
-    if (!userProfile || !userProfile.role) { 
-        console.error('Error in getAttendance: req.profile is missing. Check middleware setup.');
-        return res.status(401).json({ error: 'Authentication data missing.' });
-    }
+    if (!date) return res.status(400).json({ error: 'Date query parameter is required.' });
+    if (!userId || !role) return res.status(401).json({ error: 'Authentication data missing.' });
 
     try {
-        if (userProfile.role === 'student') {
-            // We can now directly use the roll_no from the profile
-            const { data, error } = await supabase
-                .from('attendance') 
-                .select('in_time, out_time')
-                .eq('roll_no', userProfile.roll_no) // Use roll_no from profile
-                .eq('date', date)
+        if (role === 'admin') { // role should student change it
+            const { data: studentProfile, error: profileError } = await supabase
+                .from('student')
+                .select('roll_no')
+                .eq('user_id', userId)
                 .single();
 
-            if (error && error.code !== 'PGRST116') { // Ignore "no rows" error
-                throw error;
+            if (profileError || !studentProfile?.roll_no) {
+                return res.status(404).json({ error: 'Student profile or roll number not found.' });
             }
-            
-            return res.status(200).json(data);
 
-        } else {
-            // Wardens/Admins can see all records
             const { data, error } = await supabase
                 .from('attendance')
-                .select(`*, student ( name, roll_no )`)
+                .select('attendance_id, in_time, out_time, status')
+                .eq('roll_no', studentProfile.roll_no)
                 .eq('date', date);
 
             if (error) throw error;
-            return res.status(200).json(data);
+            return res.status(200).json(data || []);
+
+        } else if (role === 'warden' || role === 'student') { // student shouldd chanfge to admin
+            const { data, error } = await supabase
+                .from('attendance')
+                .select('attendance_id, in_time, out_time, status, student(name, roll_no)')
+                .eq('date', date);
+
+            if (error) throw error;
+            return res.status(200).json(data || []);
         }
     } catch (error) {
-        console.error('Error executing getAttendance query:', error.message);
-        res.status(500).json({ error: 'An internal server error occurred while fetching attendance.' });
+        console.error('Error fetching attendance:', error);
+        res.status(500).json({ error: 'Internal server error while fetching attendance.' });
     }
 };
-

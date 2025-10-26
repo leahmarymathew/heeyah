@@ -12,6 +12,6 @@ router.get('/', protectAndFetchProfile, checkRole(['student', 'warden', 'admin']
 // @desc    Mark attendance (in or out) for a student
 // @route   POST /api/attendance
 // @access  Private (Caretaker, Warden, Admin)
-router.post('/', protectAndFetchProfile, checkRole(['caretaker', 'warden', 'admin']), markAttendance);
+router.post('/', protectAndFetchProfile, checkRole(['student','caretaker', 'warden', 'admin']), markAttendance);
 
 export default router;
