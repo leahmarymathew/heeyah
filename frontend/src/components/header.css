@@ -45,6 +45,26 @@
   align-items: center;
   gap: 12px;
 }
+
+/* UPDATED STYLES: Emergency Icon Sizing and increased margin */
+.emergency {
+  /* Set a fixed, small size for the icon container */
+  width: 30px; 
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Increased the margin-right for a larger gap from the username */
+  margin-right: 15px; 
+}
+
+.emergency img {
+  width: 100%; /* Match container width */
+  height: 100%; /* Match container height */
+  object-fit: contain; /* Ensure the full image is visible without cropping */
+}
+/* END UPDATED STYLES */
+
 .username { margin-right: 6px; }
 .avatar {
   width: 36px;
