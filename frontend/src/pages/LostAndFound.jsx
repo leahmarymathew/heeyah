@@ -36,22 +36,70 @@ function LostAndFound() {
         setLoading(true);
         setError('');
         setSuccess('');
-        let imageUrl = null;
+        
         try {
+            // Check if user is logged in and has roll number
+            if (!user || !user.roll_no) {
+                setError("You must be logged in as a student to report a lost item.");
+                setLoading(false);
+                return;
+            }
+
+            if (!itemName.trim()) {
+                setError("Please enter the item name.");
+                setLoading(false);
+                return;
+            }
+
+            let imageUrl = null;
+            
+            // Upload image if provided
             if (imageFile) {
                 const filePath = `public/${Date.now()}_${imageFile.name}`;
-                const { data: uploadData, error: uploadError } = await supabase.storage.from('lost-items').upload(filePath, imageFile);
-                if (uploadError) throw uploadError;
-                const { data: urlData } = supabase.storage.from('lost-items').getPublicUrl(uploadData.path);
-                imageUrl = urlData.publicUrl;
+                const { data: uploadData, error: uploadError } = await supabase.storage
+                    .from('lost-items')
+                    .upload(filePath, imageFile);
+                    
+                if (uploadError) {
+                    console.warn('Image upload failed:', uploadError);
+                    // Continue without image rather than failing
+                } else {
+                    const { data: urlData } = supabase.storage
+                        .from('lost-items')
+                        .getPublicUrl(uploadData.path);
+                    imageUrl = urlData.publicUrl;
+                }
             }
-            const response = await axios.post('http://localhost:3001/api/lost-and-found/report', { itemName, location, dateTime, imageUrl, isAnonymous }, { headers: { Authorization: `Bearer ${token}` } });
+
+            console.log("Reporting lost item for student:", user.name, "Roll No:", user.roll_no);
+
+            const response = await axios.post(
+                'http://localhost:3001/api/lost-and-found/simple',
+                {
+                    rollNo: user.roll_no,
+                    itemName: itemName,
+                    location: location || 'Not specified',
+                    dateTime: dateTime || new Date().toISOString(),
+                    imageUrl: imageUrl,
+                    isAnonymous: isAnonymous,
+                    studentName: user.name
+                }
+            );
+
             if (response.status === 201) {
-                setSuccess('Report filed successfully!');
-                setItemName(''); setLocation(''); setDateTime(''); setImageFile(null); setImagePreview(''); setIsAnonymous(false);
+                setSuccess(`Lost item reported successfully for ${response.data.student} (${response.data.rollNo})!`);
+                // Reset form
+                setItemName('');
+                setLocation('');
+                setDateTime('');
+                setImageFile(null);
+                setImagePreview('');
+                setIsAnonymous(false);
+                setTimeout(() => setSuccess(''), 5000);
             }
         } catch (err) {
-            setError(err.response?.data?.error || 'Failed to file report.');
+            console.error("Lost item reporting error:", err);
+            setError(err.response?.data?.error || 'Failed to report lost item.');
         } finally {
             setLoading(false);
         }
@@ -81,6 +129,15 @@ function LostAndFound() {
                         </button>
                     </div>
                 </div>
+                
+                {/* User Info Display */}
+                {user && (
+                    <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                        <p className="text-sm text-blue-800">
+                            <strong>Reporting as:</strong> {user.name} ({user.roll_no})
+                        </p>
+                    </div>
+                )}
                 
                 {/* Error and Success Messages */}
                 {error && (
