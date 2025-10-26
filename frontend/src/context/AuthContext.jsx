@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '../supabase';
 import axios from 'axios';
-import { supabase } from '../supabase'; // Supabase client
 
 // Create AuthContext
 export const AuthContext = createContext(null);
@@ -14,73 +14,95 @@ export const useAuth = () => {
     return context;
 };
 
-// AuthProvider
 export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(null);          // Full user profile (with role, etc.)
-    const [session, setSession] = useState(null);    // Supabase session
-    const [loading, setLoading] = useState(true);    // Loading state
+    const [token, setToken] = useState(null);
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     // ------------------------------
     // INITIAL SESSION CHECK
     // ------------------------------
     useEffect(() => {
-        const initializeAuth = async () => {
-            setLoading(true);
-            const { data: { session: currentSession }, error } = await supabase.auth.getSession();
-
-            if (error) {
-                console.error("Error getting session:", error);
+        // Check for existing session
+        const initializeSession = async () => {
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                
+                if (session?.access_token) {
+                    setToken(session.access_token);
+                    
+                    // Fetch user profile from backend
+                    const response = await axios.get('http://localhost:3001/api/auth/me', {
+                        headers: { 'Authorization': `Bearer ${session.access_token}` }
+                    });
+                    
+                    setUser(response.data);
+                    console.log('✅ Session restored:', response.data);
+                }
+            } catch (error) {
+                console.error('Session initialization failed:', error);
+            } finally {
                 setLoading(false);
-                return;
             }
-
-            if (currentSession) {
-                setSession(currentSession);
-                await fetchUserProfile(currentSession.access_token);
-            } else {
-                setSession(null);
-                setUser(null);
-            }
-            setLoading(false);
         };
 
         initializeAuth();
 
-        // ------------------------------
-        // LISTEN TO AUTH CHANGES
-        // ------------------------------
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(
-            async (event, newSession) => {
-                console.log("Auth event:", event);
-                setSession(newSession);
-                if (newSession?.access_token) {
-                    await fetchUserProfile(newSession.access_token);
-                } else {
-                    setUser(null);
+        // Listen for auth changes
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+            if (event === 'SIGNED_IN' && session?.access_token) {
+                setToken(session.access_token);
+                
+                try {
+                    const response = await axios.get('http://localhost:3001/api/auth/me', {
+                        headers: { 'Authorization': `Bearer ${session.access_token}` }
+                    });
+                    setUser(response.data);
+                } catch (error) {
+                    console.error('Failed to fetch user profile:', error);
                 }
-            }
-        );
-
-        return () => subscription?.unsubscribe();
-    }, []);
-
-    // ------------------------------
-    // FETCH USER PROFILE FROM BACKEND
-    // ------------------------------
-    const fetchUserProfile = async (token) => {
-        try {
-            const response = await axios.get('http://localhost:3001/api/auth/me', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            if (response.data) {
-                setUser(response.data);
-            } else {
-                console.error("Profile not found for this user");
+            } else if (event === 'SIGNED_OUT') {
+                setToken(null);
                 setUser(null);
             }
-        } catch (err) {
-            console.error("Failed to fetch user profile:", err.response?.data || err.message);
-            setUser(null);
+        });
+
+        return () => subscription.unsubscribe();
+    }, []);
+
+    const login = async (email, password) => {
+        if (!email || !password) {
+            throw new Error('Email and password are required');
+        }
+
+        try {
+            // Authenticate with Supabase
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: email,
+                password: password
+            });
+
+            if (error) throw error;
+
+            if (!data.session?.access_token) {
+                throw new Error('No access token received');
+            }
+
+            setToken(data.session.access_token);
+
+            // Fetch user profile from backend
+            const response = await axios.get('http://localhost:3001/api/auth/me', {
+                headers: { 'Authorization': `Bearer ${data.session.access_token}` }
+            });
+
+            setUser(response.data);
+            console.log('✅ Login successful:', response.data);
+
+            return response.data;
+
+        } catch (error) {
+            console.error('Login failed:', error);
+            throw new Error(error.message || 'Login failed. Please check your credentials.');
         }
     };
 
@@ -110,18 +132,21 @@ export const AuthProvider = ({ children }) => {
     // ------------------------------
     const logout = async () => {
         setLoading(true);
-        const { error } = await supabase.auth.signOut();
-        if (error) {
-            console.error("Error logging out:", error);
+        
+        try {
+            await supabase.auth.signOut();
+        } catch (error) {
+            console.error('Logout error:', error);
         }
+        
+        setToken(null);
         setUser(null);
         setSession(null);
         setLoading(false);
+        
+        console.log('✅ Logged out successfully');
     };
 
-    // ------------------------------
-    // CONTEXT VALUE
-    // ------------------------------
     const value = {
         user,                 // Full profile
         session,              // Supabase session
@@ -129,7 +154,8 @@ export const AuthProvider = ({ children }) => {
         isAuthenticated: !!session?.access_token,
         loading,
         login,
-        logout
+        logout,
+        isAuthenticated: !!token
     };
 
     return (

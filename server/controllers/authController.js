@@ -17,7 +17,7 @@ export const findUserProfile = async (userId) => {
         .select('*')
         .eq('user_id', userId)
         .single();
-    
+
     if (profile) {
         return { ...profile, role: 'student' };
     }
@@ -32,21 +32,21 @@ export const findUserProfile = async (userId) => {
         .select('*')
         .eq('user_id', userId)
         .single());
-        
+
     if (profile) {
         return { ...profile, role: 'warden' };
     }
     if (error && error.code !== 'PGRST116') {
         console.error("Error checking warden table:", error.message);
     }
-    
+
     // 3. Check caretaker table
     ({ data: profile, error } = await supabase
         .from('caretaker') // Use lowercase table name
         .select('*')
         .eq('user_id', userId)
         .single());
-        
+
     if (profile) {
         return { ...profile, role: 'caretaker' };
     }
@@ -57,7 +57,7 @@ export const findUserProfile = async (userId) => {
     // 4. Check for 'admin' role (if they don't have a profile in other tables)
     // This is a simple check. You might have a separate 'admin' table or use Supabase metadata.
     // For now, if no profile is found, we return null.
-    
-    return null; 
+
+    return null;
 };
 

@@ -15,6 +15,8 @@ const LocationIcon = () => (
 );
 
 function Complaint() {
+  const { user } = useContext(AuthContext);
+
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -24,12 +26,24 @@ function Complaint() {
     complaint: "",
     isAnonymous: true,
   });
-  
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const { token } = useContext(AuthContext);
+  // Auto-fill user information when component mounts
+  React.useEffect(() => {
+    if (user) {
+      const nameParts = user.name ? user.name.split(' ') : ['', ''];
+      setFormData(prev => ({
+        ...prev,
+        firstName: nameParts[0] || '',
+        lastName: nameParts.slice(1).join(' ') || '',
+        email: user.email || '',
+        phone: user.phone_no || ''
+      }));
+    }
+  }, [user]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -46,28 +60,44 @@ function Complaint() {
     setSuccess('');
 
     try {
-      console.log("Token being sent:", token);
-      if (!token) {
-  setError("You must be logged in to file a complaint.");
-  setLoading(false);
-  return;
-}
+      // Check if user is logged in and has roll number
+      if (!user || !user.roll_no) {
+        setError("You must be logged in as a student to file a complaint.");
+        setLoading(false);
+        return;
+      }
+
+      if (!formData.complaint.trim()) {
+        setError("Please describe your complaint.");
+        setLoading(false);
+        return;
+      }
+
+      console.log("Filing complaint for student:", user.name, "Roll No:", user.roll_no);
+
       const response = await axios.post(
-        'http://localhost:3001/api/requests',
-        formData,
-        { headers: { Authorization: `Bearer ${token}` } }
+        'http://localhost:3001/api/requests/simple',
+        {
+          rollNo: user.roll_no,
+          subject: formData.subject,
+          complaint: formData.complaint,
+          studentName: user.name
+        }
       );
 
       if (response.status === 201) {
-        setSuccess('Complaint Filed Successfully!');
+        setSuccess(`Complaint Filed Successfully for ${response.data.student} (${response.data.rollNo})!`);
         // Reset form
-        setFormData({
-          firstName: "", lastName: "", email: "", phone: "",
-          subject: "General Inquiry", complaint: "", isAnonymous: true,
-        });
-        setTimeout(() => setSuccess(''), 3000); // Clear success message after 3 seconds
+        setFormData(prev => ({
+          ...prev,
+          subject: "General Inquiry",
+          complaint: "",
+          isAnonymous: true,
+        }));
+        setTimeout(() => setSuccess(''), 5000); // Clear success message after 5 seconds
       }
     } catch (err) {
+      console.error("Complaint filing error:", err);
       setError(err.response?.data?.error || 'Failed to file complaint.');
     } finally {
       setLoading(false);
@@ -77,13 +107,13 @@ function Complaint() {
   return (
     <div className="min-h-[calc(100vh-80px)] bg-white p-4 sm:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
+
         {/* Left Column */}
         <aside className="lg:col-span-1 bg-primary-blue text-white rounded-2xl p-8 relative overflow-hidden">
           <div className="relative z-10">
             <h2 className="text-3xl font-bold mb-2">Complaint Box</h2>
             <p className="text-blue-200 mb-8">Contact wardens anytime between <strong>8pm to 10pm</strong></p>
-            
+
             <div className="space-y-6 mb-12">
               <div className="flex items-center gap-4">
                 <span className="bg-white/20 p-2 rounded-full"><PhoneIcon /></span>
@@ -100,12 +130,12 @@ function Complaint() {
             </div>
 
             <div className="border-t border-white/20 pt-8">
-                <h3 className="text-xl font-semibold mb-2">Lost anything?</h3>
-                <Link to="/lost-and-found">
-                    <button className="bg-white text-primary-blue font-bold py-2 px-6 rounded-lg hover:bg-gray-200 transition">
-                        Lost and Found
-                    </button>
-                </Link>
+              <h3 className="text-xl font-semibold mb-2">Lost anything?</h3>
+              <Link to="/lost-and-found">
+                <button className="bg-white text-primary-blue font-bold py-2 px-6 rounded-lg hover:bg-gray-200 transition">
+                  Lost and Found
+                </button>
+              </Link>
             </div>
           </div>
           {/* Decorative Circles */}
@@ -115,6 +145,13 @@ function Complaint() {
 
         {/* Right Column - Form */}
         <section className="lg:col-span-2 p-4 sm:p-8">
+          {user && (
+            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm text-blue-800">
+                <strong>Filing complaint as:</strong> {user.name} ({user.roll_no})
+              </p>
+            </div>
+          )}
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
@@ -137,7 +174,7 @@ function Complaint() {
                 <input type="text" name="phone" value={formData.phone} onChange={handleChange} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-blue focus:border-primary-blue" />
               </div>
             </div>
-            
+
             <div>
               <label className="text-sm font-medium text-gray-700">Select Subject?</label>
               <div className="mt-2 grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -164,12 +201,12 @@ function Complaint() {
                 {loading ? 'Submitting...' : 'File Complaint'}
               </button>
             </div>
-            
+
             {/* Success Toast */}
             {success && (
-                <div className="fixed bottom-5 right-5 bg-green-500 text-white py-2 px-4 rounded-lg shadow-lg">
-                    {success}
-                </div>
+              <div className="fixed bottom-5 right-5 bg-green-500 text-white py-2 px-4 rounded-lg shadow-lg">
+                {success}
+              </div>
             )}
             {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
           </form>

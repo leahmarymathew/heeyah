@@ -15,8 +15,8 @@ const router = express.Router();
 // This route is useful for the frontend to get user data after a page reload.
 router.get('/me', protectAndFetchProfile, (req, res) => {
     // The protectAndFetchProfile middleware has already run,
-    // so the full user profile is attached to req.profile.
-    res.status(200).json(req.profile);
+    // so the full user profile is attached to req.user.
+    res.status(200).json(req.user);
 });
 
 export default router;
