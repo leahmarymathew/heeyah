@@ -179,13 +179,13 @@
 
 import './WardenAttendance.css';
 import { useState, useEffect } from 'react';
-import back from "../../assets/Arrow 1.png";
+import { useNavigate } from 'react-router-dom';
 import SimpleCalendar from '../../components/Calendar';
-import axios from 'axios';
-import { useAuth } from '../../context/AuthContext'; // useAuth for token
+import { supabase } from '../../supabase';
+import WardenLayout from '../../components/WardenLayout';
 
 function WardenAttendance() {
-    const { token } = useAuth(); // fetch token from context
+    const navigate = useNavigate();
 
     const formatDateForDisplay = (date) => {
         const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -251,28 +251,34 @@ function WardenAttendance() {
     };
 
     const fetchAttendance = async (date) => {
-        if (!token) {
-            setError('Not authorized. Please login.');
-            return;
-        }
-
         try {
             setLoading(true);
             setError(null);
             const formattedDate = formatDateForFilter(date);
 
-            const response = await axios.get(
-                `http://localhost:3001/api/attendance?date=${formattedDate}`,
-                {
-                    headers: { Authorization: `Bearer ${token}` },
-                    withCredentials: true
-                }
-            );
+            // Fetch attendance data from Supabase
+            const { data: attendanceRecords, error } = await supabase
+                .from('attendance')
+                .select(`
+                    *,
+                    student (
+                        name,
+                        roll_no
+                    )
+                `)
+                .eq('date', formattedDate)
+                .order('roll_no', { ascending: true });
 
-            setAttendanceData(response.data || []);
+            if (error) {
+                console.error('Supabase error:', error);
+                setError('Failed to load attendance data.');
+                setAttendanceData([]);
+            } else {
+                setAttendanceData(attendanceRecords || []);
+            }
         } catch (err) {
             console.error('Error fetching attendance:', err);
-            setError(err.response?.data?.error || 'Failed to load attendance data.');
+            setError('Failed to load attendance data.');
             setAttendanceData([]);
         } finally {
             setLoading(false);
@@ -281,19 +287,26 @@ function WardenAttendance() {
 
     useEffect(() => {
         fetchAttendance(selectedDate);
-    }, [selectedDate, token]);
+    }, [selectedDate]);
 
     const handleDateChange = (newDate) => {
         setSelectedDate(new Date(newDate));
         setIsCalendarOpen(false);
     };
 
+    const handleGoBack = () => {
+        navigate(-1);
+    };
+
     return (
-        <>
-            <div className="main">
-                <button type="button" className="image-button">
-                    <img src={back} alt="Back" width="30px" />
-                </button>
+        <WardenLayout>
+            <div className="warden-attendance-main">
+                <div className="warden-attendance-header">
+                    <button type="button" className="back-button" onClick={handleGoBack}>
+                        ← Back
+                    </button>
+                    <h1 className="page-title">Attendance Management</h1>
+                </div>
 
                 <div className="warden-attendance-container">
                     <div className="attendance-header">
@@ -361,7 +374,7 @@ function WardenAttendance() {
                     </div>
                 </div>
             )}
-        </>
+        </WardenLayout>
     );
 }
 

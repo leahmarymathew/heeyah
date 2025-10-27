@@ -30,6 +30,7 @@ function App() {
       {/* --- Warden Routes (separate layout) --- */}
       <Route path="/warden-dashboard" element={<ProtectedRoute><WardenDashboard /></ProtectedRoute>} />
       <Route path="/warden-room-management" element={<ProtectedRoute><WardenRoomManagement /></ProtectedRoute>} />
+      <Route path="/warden-attendence" element={<ProtectedRoute><WardenAttendance /></ProtectedRoute>} />
       
       {/* --- Protected Routes with Student/Admin Layout --- */}
       <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
@@ -47,7 +48,6 @@ function App() {
         <Route path="/attendance" element={<StudentAttendance />} /> 
         <Route path="/student/leave-form" element={<StudentLeave />} />
         <Route path="/student-lost-found" element={<StudentLostFoundMessages />} /> 
-        <Route path="/warden-attendence" element={<WardenAttendance />} /> 
         <Route path="/warden-complaint" element={<WardenComplaint/>} /> 
         <Route path="/warden-leave" element={<WardenLeave/>} /> 
         <Route path="/room-allocation" element={<RoomAllocationPage />} />
