@@ -136,14 +136,14 @@ export const getAttendanceSimple = async (req, res) => {
     }
 
     try {
-        // Handle both old and new roll numbers for backward compatibility
-        const normalizedRollNo = rollNo === 'TEST-STUDENT' ? 'TEST-STU' : rollNo;
+        // Use the actual roll number without normalization
+        const truncatedRollNo = rollNo.substring(0, 10);
         
         // Get attendance from database
         const { data: attendanceData, error } = await supabase
             .from('attendance')
             .select('*')
-            .eq('roll_no', normalizedRollNo)
+            .eq('roll_no', truncatedRollNo)
             .order('date', { ascending: false });
 
         if (error) {
@@ -151,6 +151,7 @@ export const getAttendanceSimple = async (req, res) => {
             return res.status(500).json({ error: 'Failed to fetch attendance data.' });
         }
 
+        console.log('Fetched attendance data:', attendanceData);
         res.status(200).json(attendanceData || []);
 
     } catch (error) {
@@ -179,37 +180,83 @@ export const markAttendanceSimple = async (req, res) => {
 
     try {
         const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
-        const currentTime = new Date().toISOString();
         
-        // Handle both old and new roll numbers for backward compatibility
-        const normalizedRollNo = rollNo === 'TEST-STUDENT' ? 'TEST-STU' : rollNo;
+        // Get current IST time
+        const now = new Date();
+        const istTime = new Date(now.getTime() + (5.5 * 60 * 60 * 1000));
+        const currentTime = istTime.toISOString();
+        
+        // Use the actual roll number without normalization
+        const truncatedRollNo = rollNo.substring(0, 10); // Ensure roll_no fits in 10 chars
 
-        // Create simple attendance record with shorter ID
-        const shortId = Date.now().toString().slice(-8); // Use last 8 digits of timestamp
-        const attendanceRecord = {
-            attendance_id: shortId,
-            roll_no: normalizedRollNo.substring(0, 10), // Ensure roll_no fits in 10 chars
-            date: today,
-            in_time: type === 'in' ? currentTime : null,
-            out_time: type === 'out' ? currentTime : null
-        };
-
-        console.log('Inserting attendance record:', attendanceRecord);
-
-        const { data, error } = await supabase
+        // Check if there's already an attendance record for today
+        const { data: existingRecord, error: fetchError } = await supabase
             .from('attendance')
-            .insert([attendanceRecord]);
+            .select('*')
+            .eq('roll_no', truncatedRollNo)
+            .eq('date', today)
+            .single();
 
-        if (error) {
-            console.error('Database insert error:', error);
-            return res.status(500).json({ error: 'Failed to save attendance: ' + error.message });
+        if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 means no rows found
+            console.error('Database fetch error:', fetchError);
+            return res.status(500).json({ error: 'Failed to check existing attendance.' });
         }
 
-        console.log('Attendance saved successfully:', data);
+        let result;
+
+        if (existingRecord) {
+            // Update existing record
+            const updateData = {};
+            if (type === 'in') {
+                updateData.in_time = currentTime;
+            } else {
+                updateData.out_time = currentTime;
+            }
+
+            console.log('Updating existing record:', updateData);
+
+            const { data, error } = await supabase
+                .from('attendance')
+                .update(updateData)
+                .eq('attendance_id', existingRecord.attendance_id)
+                .select();
+
+            if (error) {
+                console.error('Database update error:', error);
+                return res.status(500).json({ error: 'Failed to update attendance: ' + error.message });
+            }
+            result = data;
+        } else {
+            // Create new record for today
+            const shortId = Date.now().toString().slice(-8);
+            const attendanceRecord = {
+                attendance_id: shortId,
+                roll_no: truncatedRollNo,
+                date: today,
+                in_time: type === 'in' ? currentTime : null,
+                out_time: type === 'out' ? currentTime : null
+            };
+
+            console.log('Creating new attendance record:', attendanceRecord);
+
+            const { data, error } = await supabase
+                .from('attendance')
+                .insert([attendanceRecord])
+                .select();
+
+            if (error) {
+                console.error('Database insert error:', error);
+                return res.status(500).json({ error: 'Failed to create attendance: ' + error.message });
+            }
+            result = data;
+        }
+
+        console.log('Attendance operation successful:', result);
 
         res.status(200).json({ 
             success: true, 
-            message: `${type === 'in' ? 'Check-in' : 'Check-out'} successful`
+            message: `${type === 'in' ? 'Check-in' : 'Check-out'} successful`,
+            data: result
         });
 
     } catch (error) {

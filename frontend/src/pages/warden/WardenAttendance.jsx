@@ -221,8 +221,23 @@ function WardenAttendance() {
     const toISTDate = (dateStr) => {
         if (!dateStr) return null;
         const date = new Date(dateStr);
-        const istOffset = 5.5 * 60; // IST = UTC +5:30 in minutes
-        return new Date(date.getTime() + istOffset * 60000);
+        // Convert to IST (UTC + 5:30)
+        const utc = date.getTime() + (date.getTimezoneOffset() * 60000);
+        return new Date(utc + (5.5 * 60 * 60 * 1000));
+    };
+
+    const formatTimeIST = (dateStr) => {
+        if (!dateStr) return 'N/A';
+        
+        // Since backend now stores IST time, just format it directly
+        const date = new Date(dateStr);
+        
+        // Format in 12-hour format with AM/PM
+        return date.toLocaleTimeString('en-IN', { 
+            hour: '2-digit', 
+            minute: '2-digit',
+            hour12: true
+        });
     };
 
     const computeStatus = (record) => {
@@ -344,8 +359,8 @@ function WardenAttendance() {
                                                 <td>{index + 1}</td>
                                                 <td>{record.student?.name || '—'}</td>
                                                 <td>{record.student?.roll_no || record.roll_no || '—'}</td>
-                                                <td>{record.out_time ? toISTDate(record.out_time).toLocaleTimeString() : 'N/A'}</td>
-                                                <td>{record.in_time ? toISTDate(record.in_time).toLocaleTimeString() : 'N/A'}</td>
+                                                <td>{formatTimeIST(record.out_time)}</td>
+                                                <td>{formatTimeIST(record.in_time)}</td>
                                                 <td className={`status-badge ${dynamicClasses}`}>{status}</td>
                                             </tr>
                                         );

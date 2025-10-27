@@ -568,9 +568,17 @@ export default function StudentAttendance() {
   };
 
   const formatTimeIST = (dateInput) => {
-    const date = toIST(dateInput);
-    if (!date) return "--:--";
-    return date.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false });
+    if (!dateInput) return "--:--";
+    
+    // Since backend now stores IST time, just format it directly
+    const date = new Date(dateInput);
+    
+    // Format in 24-hour format without AM/PM
+    return date.toLocaleTimeString('en-IN', { 
+      hour: '2-digit', 
+      minute: '2-digit',
+      hour12: false
+    });
   };
 
   const formatDate = (date) => {
