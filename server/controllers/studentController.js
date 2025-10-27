@@ -1,8 +1,7 @@
 import supabase from '../config/supabaseClient.js';
 import { v4 as uuidv4 } from 'uuid';
 
-// Simple in-memory storage for demo purposes
-let attendanceStore = {};
+// Note: Now using database instead of in-memory storage
 
 // @desc    Register a new student
 // @route   POST /api/students/register
@@ -140,9 +139,19 @@ export const getAttendanceSimple = async (req, res) => {
         // Handle both old and new roll numbers for backward compatibility
         const normalizedRollNo = rollNo === 'TEST-STUDENT' ? 'TEST-STU' : rollNo;
         
-        // Get attendance from memory store or return empty array
-        const studentAttendance = attendanceStore[normalizedRollNo] || [];
-        res.status(200).json(studentAttendance);
+        // Get attendance from database
+        const { data: attendanceData, error } = await supabase
+            .from('attendance')
+            .select('*')
+            .eq('roll_no', normalizedRollNo)
+            .order('date', { ascending: false });
+
+        if (error) {
+            console.error('Database error:', error);
+            return res.status(500).json({ error: 'Failed to fetch attendance data.' });
+        }
+
+        res.status(200).json(attendanceData || []);
 
     } catch (error) {
         console.error("Error in simple attendance fetch:", error.message);
@@ -158,6 +167,8 @@ export const getAttendanceSimple = async (req, res) => {
 export const markAttendanceSimple = async (req, res) => {
     const { rollNo, studentName, type } = req.body;
 
+    console.log('Attendance request:', { rollNo, studentName, type });
+
     if (!rollNo || !type) {
         return res.status(400).json({ error: 'Roll number and type are required.' });
     }
@@ -169,48 +180,40 @@ export const markAttendanceSimple = async (req, res) => {
     try {
         const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
         const currentTime = new Date().toISOString();
-
-        // Initialize student attendance if not exists
-        if (!attendanceStore[rollNo]) {
-            attendanceStore[rollNo] = [];
-        }
         
         // Handle both old and new roll numbers for backward compatibility
         const normalizedRollNo = rollNo === 'TEST-STUDENT' ? 'TEST-STU' : rollNo;
 
-        // Find today's record
-        let todayRecord = attendanceStore[normalizedRollNo].find(record => record.date === today);
+        // Create simple attendance record with shorter ID
+        const shortId = Date.now().toString().slice(-8); // Use last 8 digits of timestamp
+        const attendanceRecord = {
+            attendance_id: shortId,
+            roll_no: normalizedRollNo.substring(0, 10), // Ensure roll_no fits in 10 chars
+            date: today,
+            in_time: type === 'in' ? currentTime : null,
+            out_time: type === 'out' ? currentTime : null
+        };
 
-        if (!todayRecord) {
-            // Create new record for today
-            todayRecord = {
-                roll_no: normalizedRollNo,
-                date: today,
-                in_time: null,
-                out_time: null
-            };
-            if (!attendanceStore[normalizedRollNo]) {
-                attendanceStore[normalizedRollNo] = [];
-            }
-            attendanceStore[normalizedRollNo].push(todayRecord);
+        console.log('Inserting attendance record:', attendanceRecord);
+
+        const { data, error } = await supabase
+            .from('attendance')
+            .insert([attendanceRecord]);
+
+        if (error) {
+            console.error('Database insert error:', error);
+            return res.status(500).json({ error: 'Failed to save attendance: ' + error.message });
         }
 
-        // Update the record
-        if (type === 'in') {
-            todayRecord.in_time = currentTime;
-        } else {
-            todayRecord.out_time = currentTime;
-        }
-
-
+        console.log('Attendance saved successfully:', data);
 
         res.status(200).json({ 
             success: true, 
-            message: `${type === 'in' ? 'Check-in' : 'Check-out'} successful` 
+            message: `${type === 'in' ? 'Check-in' : 'Check-out'} successful`
         });
 
     } catch (error) {
-        console.error("Error in simple attendance marking:", error.message);
-        res.status(500).json({ error: 'An internal server error occurred.' });
+        console.error("Error in simple attendance marking:", error);
+        res.status(500).json({ error: 'An internal server error occurred: ' + error.message });
     }
 };

@@ -39,7 +39,7 @@ export const AuthProvider = ({ children }) => {
 
         try {
             setLoading(true);
-            
+
             // Call simple login endpoint
             const response = await axios.post('http://localhost:3001/api/auth/simple-login', {
                 email: email,
@@ -49,10 +49,10 @@ export const AuthProvider = ({ children }) => {
             if (response.data.success) {
                 const userData = response.data.user;
                 setUser(userData);
-                
+
                 // Save to localStorage for persistence
                 localStorage.setItem('simpleUser', JSON.stringify(userData));
-                
+
 
                 return userData;
             } else {
