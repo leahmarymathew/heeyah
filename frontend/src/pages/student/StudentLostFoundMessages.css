@@ -86,6 +86,13 @@
     object-fit: cover;
     border-radius: 8px;
     border: 1px solid #e5e7eb;
+    background-color: #f9fafb;
+    transition: opacity 0.3s ease;
+}
+
+.item-photo-img:hover {
+    opacity: 0.8;
+    cursor: pointer;
 }
 
 .no-photo-placeholder {

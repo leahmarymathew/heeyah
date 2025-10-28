@@ -26,6 +26,7 @@
   width: 100%;
   box-sizing: border-box;
 }
+
 .stdReport h2 {
   color: white;
   font-size: 30px;
@@ -50,13 +51,15 @@
 
 /* List Styling */
 .stdReport ul {
-  list-style: none; /* Already handles the padding/style for Student Reports */
-  padding: 0; 
+  list-style: none;
+  /* Already handles the padding/style for Student Reports */
+  padding: 0;
   margin-bottom: 20px;
 }
 
 .stdReport ul li {
-  color: rgba(255, 255, 255, 0.9); /* Lighten text slightly */
+  color: rgba(255, 255, 255, 0.9);
+  /* Lighten text slightly */
   font-size: 16px;
   line-height: 1.6;
   margin-bottom: 5px;
@@ -77,7 +80,8 @@
 /* Button Styling: High-contrast white button */
 .btnInsights {
   background-color: #ffffff;
-  color: #7b61ff; /* Use the primary purple color for text */
+  color: #7b61ff;
+  /* Use the primary purple color for text */
   border: none;
   padding: 12px 25px;
   border-radius: 8px;
@@ -98,13 +102,17 @@
 .leaves {
   margin-bottom: 20px;
 }
-.leaveHead{
+
+.leaveHead {
   color: black;
 }
-.lists{
-  padding: 0; /* Removes default left gap on Leave Requests UL */
+
+.lists {
+  padding: 0;
+  /* Removes default left gap on Leave Requests UL */
   padding-bottom: 15px;
 }
+
 .leaveItem {
   display: flex;
   gap: 20px;
@@ -117,6 +125,7 @@
 .leaveItem:last-child {
   border-bottom: none;
 }
+
 .info {
   flex: 1;
 }
@@ -133,6 +142,7 @@
   font-size: 14px;
   color: #666;
 }
+
 .appro {
   width: fit-content;
   padding: 8px 16px;
@@ -149,6 +159,7 @@
 .appro:hover {
   background-color: #059669;
 }
+
 .alls {
   background-color: #2655B6;
   color: white;
@@ -166,8 +177,10 @@
 .alls:hover {
   background-color: #1e4a9a;
 }
+
 .hrline {
-  display: none; /* Hide the hr line since we're using flexbox gap */
+  display: none;
+  /* Hide the hr line since we're using flexbox gap */
 }
 
 .complaints {
@@ -175,6 +188,7 @@
   min-width: 400px;
   padding-top: 10px;
 }
+
 .compItem {
   display: flex;
   gap: 20px;
@@ -194,6 +208,7 @@
   align-items: flex-end;
   gap: 5px;
 }
+
 .cinfo {
   flex: 1;
 }
@@ -210,49 +225,61 @@
   font-size: 14px;
   color: #666;
 }
-.clists{
+
+.clists {
   padding: 0;
   margin: 0;
-  list-style: none; /* Ensures the left gap is completely removed for complaints UL */
+  list-style: none;
+  /* Ensures the left gap is completely removed for complaints UL */
 }
-.complaints{
+
+.complaints {
   color: black;
   padding-top: 10px;
 }
-.status{
+
+.status {
   background-color: #5EB7E4;
   color: white;
   display: flex;
-  align-items: center; /* Vertically center the text */
-  justify-content: center; /* Horizontally center the text */
-  padding: 4px 16px; /* Reduced vertical padding for a cleaner look */
+  align-items: center;
+  /* Vertically center the text */
+  justify-content: center;
+  /* Horizontally center the text */
+  padding: 4px 16px;
+  /* Reduced vertical padding for a cleaner look */
   height: fit-content;
   border-radius: 20px;
-  min-width: 80px; /* Added min-width for consistency */
+  min-width: 80px;
+  /* Added min-width for consistency */
 }
 
 .status p {
-  margin: 0; 
+  margin: 0;
   padding: 0;
-  font-size: 14px; 
+  font-size: 14px;
   font-weight: 600;
 }
 
 /* Status color variants */
 .status-resolved {
-  background-color: #10B981 !important; /* Green for resolved */
+  background-color: #10B981 !important;
+  /* Green for resolved */
 }
 
 .status-pending {
-  background-color: #F59E0B !important; /* Orange for pending */
+  background-color: #F59E0B !important;
+  /* Orange for pending */
 }
 
 .status-progress {
-  background-color: #3B82F6 !important; /* Blue for in progress */
+  background-color: #3B82F6 !important;
+  /* Blue for in progress */
 }
 
 .status-approved {
-  background-color: #10B981 !important; /* Green for approved */
+  background-color: #10B981 !important;
+  /* Green for approved */
   color: white;
   padding: 4px 12px;
   border-radius: 12px;
@@ -261,7 +288,8 @@
 }
 
 .status-rejected {
-  background-color: #EF4444 !important; /* Red for rejected */
+  background-color: #EF4444 !important;
+  /* Red for rejected */
   color: white;
   padding: 4px 12px;
   border-radius: 12px;
@@ -302,6 +330,7 @@
   font-size: 14px;
   color: rgba(255, 255, 255, 0.9);
 }
+
 /* 
 Responsive design */
 @media (max-width: 1024px) {
@@ -309,15 +338,15 @@ Responsive design */
     flex-direction: column;
     padding: 15px;
   }
-  
+
   .leftSect {
     min-width: auto;
   }
-  
+
   .complaints {
     min-width: auto;
   }
-  
+
   .stdReport {
     width: 100%;
   }
@@ -327,23 +356,23 @@ Responsive design */
   .wrapper {
     padding: 10px;
   }
-  
+
   .stdReport {
     padding: 20px;
   }
-  
+
   .leaveItem {
     flex-direction: column;
     gap: 10px;
     align-items: flex-start;
   }
-  
+
   .compItem {
     flex-direction: column;
     gap: 10px;
     align-items: flex-start;
   }
-  
+
   .alls {
     width: 100%;
   }

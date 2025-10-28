@@ -97,3 +97,70 @@ export const reportLostItemSimple = async (req, res) => {
         res.status(500).json({ error: 'An internal server error occurred.' });
     }
 };
+
+// @desc    Upload image for lost item (bypass RLS issues)
+// @route   POST /api/lost-and-found/upload-image
+// @access  Public
+export const uploadLostItemImage = async (req, res) => {
+    try {
+        const { rollNo } = req.body;
+        
+        if (!req.file) {
+            return res.status(400).json({ success: false, error: 'No image file provided' });
+        }
+        
+        if (!rollNo) {
+            return res.status(400).json({ success: false, error: 'Roll number is required' });
+        }
+        
+        console.log('Processing image upload for roll no:', rollNo);
+        console.log('File details:', {
+            filename: req.file.originalname,
+            size: req.file.size,
+            mimetype: req.file.mimetype
+        });
+        
+        // Create unique filename
+        const timestamp = Date.now();
+        const filename = `${timestamp}_${req.file.originalname}`;
+        const filePath = `public/${filename}`;
+        
+        // Upload to Supabase storage using server-side client (with service key)
+        const { data: uploadData, error: uploadError } = await supabase.storage
+            .from('lost-items')
+            .upload(filePath, req.file.buffer, {
+                contentType: req.file.mimetype,
+                cacheControl: '3600',
+                upsert: false
+            });
+            
+        if (uploadError) {
+            console.error('Supabase upload error:', uploadError);
+            return res.status(500).json({ 
+                success: false, 
+                error: 'Failed to upload image to storage' 
+            });
+        }
+        
+        // Get public URL
+        const { data: urlData } = supabase.storage
+            .from('lost-items')
+            .getPublicUrl(uploadData.path);
+            
+        const imageUrl = urlData.publicUrl;
+        console.log('Image uploaded successfully:', imageUrl);
+        
+        res.json({
+            success: true,
+            imageUrl: imageUrl,
+            message: 'Image uploaded successfully'
+        });
+        
+    } catch (error) {
+        console.error('Error in uploadLostItemImage:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Internal server error during image upload' 
+        });
+    }
+};

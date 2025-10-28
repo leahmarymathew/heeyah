@@ -29,6 +29,18 @@ const StudentLostFoundMessages = () => {
                 const response = await fetch(API_URL);
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 const data = await response.json();
+                
+                // Debug: Log the data to see what we're getting
+                console.log('Lost & Found items received:', data);
+                data.forEach((item, index) => {
+                    console.log(`Item ${index + 1}:`, {
+                        itemName: item.itemName,
+                        photo: item.photo,
+                        photoType: typeof item.photo,
+                        photoLength: item.photo ? item.photo.length : 0
+                    });
+                });
+                
                 setItems(data);
             } catch (err) {
                 console.error(err);
@@ -72,20 +84,29 @@ const StudentLostFoundMessages = () => {
                                         <p><strong>Location:</strong> {item.lastKnownLocation || 'N/A'}</p>
                                     </td>
                                     <td className="cell-item-photo">
-                                        {item.photo && item.photo !== 'nil' ? (
+                                        {item.photo && item.photo !== 'nil' && item.photo !== 'null' && item.photo.trim() !== '' ? (
                                             <img
                                                 src={item.photo}
-                                                alt={item.itemName}
+                                                alt={`Lost item: ${item.itemName}`}
                                                 className="item-photo-img"
+                                                onLoad={(e) => {
+                                                    console.log('Image loaded successfully:', item.photo);
+                                                }}
                                                 onError={(e) => {
-                                                    e.target.src = `https://placehold.co/100x100/e0e0e0/777?text=Image+Broken`;
+                                                    console.error('Image failed to load:', item.photo);
+                                                    e.target.style.display = 'none';
+                                                    e.target.nextSibling.style.display = 'flex';
                                                 }}
                                             />
-                                        ) : (
-                                            <div className="no-photo-placeholder">
-                                                <span>No Image</span>
-                                            </div>
-                                        )}
+                                        ) : null}
+                                        <div 
+                                            className="no-photo-placeholder" 
+                                            style={{ 
+                                                display: (!item.photo || item.photo === 'nil' || item.photo === 'null' || item.photo.trim() === '') ? 'flex' : 'none' 
+                                            }}
+                                        >
+                                            <span>No Image</span>
+                                        </div>
                                     </td>
                                 </tr>
                             ))

@@ -106,25 +106,7 @@ const WardenDashboard = () => {
     navigate('/warden-complaint');
   };
 
-  const handleApproveLeave = async (leaveId) => {
-    try {
-      const { error } = await supabase
-        .from('leave_record')
-        .update({ approved_by: true })
-        .eq('leave_id', leaveId);
 
-      if (error) {
-        console.error('Error approving leave:', error);
-        alert('Failed to approve leave');
-      } else {
-        alert('Leave approved successfully');
-        fetchDashboardData(); // Refresh data
-      }
-    } catch (error) {
-      console.error('Error approving leave:', error);
-      alert('Failed to approve leave');
-    }
-  };
 
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
@@ -198,12 +180,9 @@ const WardenDashboard = () => {
                             Rejected
                           </span>
                         ) : (
-                          <button 
-                            className="appro" 
-                            onClick={() => handleApproveLeave(leave.leave_id)}
-                          >
-                            Approve
-                          </button>
+                          <span className="status-pending">
+                            Pending
+                          </span>
                         )}
                       </li>
                     ))
