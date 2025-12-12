@@ -1,0 +1,231 @@
+/* src/pages/RoomAllocation.css */
+
+/* REMOVED: Global resets and body styles to avoid overriding index.css and app layout */
+
+*{
+    font-family: 'Roboto', sans-serif;
+}
+
+.help {
+    padding: 1.5rem 0 0 0;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+}
+
+.help-info {
+    gap: 0.5rem;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.circle {
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.reserved {
+    background-color: #DC3545;
+    color: white;
+}
+.available {
+    background-color: #DADADA;
+}
+.partial {
+    background-color: #2655B6;
+    color: white;
+}
+
+span {
+    display: inline-block;
+    line-height: 1;
+    font-size: 0.75rem;
+    /* REMOVED: font-family to rely on inherited font */
+}
+
+.container {
+    display: flex; 
+    flex-direction: column;
+    align-items: center; 
+    /* Changed to flex-start to let content flow */
+    justify-content: flex-start;
+    width: 100%;
+    padding-bottom: 20px;
+}
+
+.search-help {
+    display: flex; 
+    flex-direction: column;
+    justify-content: center;
+    width: 60%;
+}
+
+.search {
+    padding: 1rem 0;
+}
+
+.filter {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    justify-content: space-around;
+}
+
+input, select, button {
+  font-size: 14px;
+  padding: 8px 12px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  outline: none;
+  box-sizing: border-box;
+  height: 2.5rem;
+}
+
+/* Input and select */
+input, select {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  color: #333;
+  transition: border 0.2s, box-shadow 0.2s;
+}
+
+input {
+    width: 45%
+}
+
+select {
+    width: 25%
+}
+
+input:focus, select:focus {
+  border-color: #1976d2;
+  box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
+}
+
+/* Button */
+button {
+  background-color: #1976d2;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 1rem;
+  width: 15%;
+  transition: background 0.2s;
+}
+
+button:hover {
+  background-color: #1565c0;
+}
+
+button:active {
+  background-color: #0d47a1;
+}
+
+.rooms-container {
+    width: 80%;
+    padding: 2rem 0;
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+}
+
+.wing {
+    width: 100%;
+    /* CORRECTED: Changed to column for better title placement */
+    display: flex;
+    flex-direction: column; 
+    justify-content: center;
+    align-items: center;
+}
+
+.wing-title {
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin-bottom: 1rem; 
+    align-self: flex-start; 
+}
+
+.room-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(5rem, 1fr));
+    gap: 0.75rem;
+    width: 100%;
+}
+
+.room-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.room-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.room-prefix {
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.room-number {
+    font-size: 1.3rem;
+    font-weight: 700;
+}
+
+/* Card color text adjustments - Specific classes for room-card component */
+.reserved-red {
+     background-color: #DC3545;
+     color: white;
+}
+.partial-blue {
+     background-color: #2655B6;
+     color: white;
+}
+.available-grey {
+     background-color: #DADADA;
+     color: #424242;
+}
+
+.reserved-red .room-prefix,
+.partial-blue .room-prefix {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.available-grey .room-prefix {
+    color: #616161;
+}
+
+.floor-separator {
+    text-align: center;
+    font-weight: bold;
+    font-size: 1.25rem;
+    color: #888;
+    margin: 0.5rem 0;
+}
+
+.loading-message {
+    margin: 20px;
+    font-size: 16px;
+    color: #666;
+}
+
+.allot {
+    background-color: #1976d2;
+    color: white;
+    font-weight: 700;
+}

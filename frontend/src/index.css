@@ -1,0 +1,16 @@
+/* Imports the Poppins font from Google Fonts for the entire project */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+/* These three lines are essential. They import all of Tailwind's
+   base styles, component classes, and utility classes. */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* You can add global base styles here if needed. */
+body {
+  background-color: #ffffff; 
+  font-family: 'Roboto', sans-serif;
+}
+
+

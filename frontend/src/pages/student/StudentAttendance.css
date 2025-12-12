@@ -1,0 +1,410 @@
+* {
+    margin: 0; 
+    padding: 0; 
+    box-sizing: border-box;
+}
+
+body { 
+    font-family: 'Roboto', sans-serif;
+    background-color: #f7f9fc; 
+}
+
+.attendance-container {
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+    padding: 2rem; 
+    min-height: 60vh; 
+    gap: 5%;
+    z-index: 1;
+}
+
+.date-section {
+    width: 60%; 
+    height: 100%; 
+    display: flex;
+    align-items: center; 
+    justify-content: space-between;
+    position: relative;
+}
+
+.date-wheels-container {
+    display: flex; 
+    align-items: center;
+    justify-content: center; 
+    gap: 3rem; 
+    flex-grow: 1;
+}
+
+.wheel-container {
+    height: 255px;
+    overflow: hidden; 
+    text-align: center;
+}
+
+.wheel {
+    height: 100%; 
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory;
+    scroll-behavior: smooth;
+    padding: 85px 0;
+    -ms-overflow-style: none; 
+    scrollbar-width: none;
+}
+
+.wheel::-webkit-scrollbar { 
+    display: none; 
+}
+
+.wheel-item {
+    height: 85px; 
+    display: flex; 
+    align-items: center;
+    justify-content: center; 
+    transition: all 0.3s ease-out;
+    scroll-snap-align: center;
+    color: #aaa;
+    font-weight: 300;
+    opacity: 0.7;
+    transform: scale(0.8);
+}
+
+.calendar-wrapper { 
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+}
+.calendar-icon { 
+    cursor: pointer; 
+    color: #888; 
+    padding: 10px; 
+}
+.calendar-icon:hover { 
+    color: #000; 
+}
+
+.daily-record {
+    width: 28%; 
+    max-width: 350px; 
+    background: linear-gradient(135deg, #c4dbff, #8faeff);
+    border-radius: 20px;
+    box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.12);
+    padding: 2rem 2rem 2.5rem 2rem;
+    color: #000;
+    display: flex; 
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start; 
+    min-height: 240px;
+}
+
+.attendance-card { 
+    width: 100%; 
+}
+
+.daily-record .time-section { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+    width: 100%;
+}
+
+.daily-record .time-section > div {
+    text-align: center;
+    flex-basis: 50%;
+}
+
+.daily-record .time-label { 
+    font-size: 24px;
+    color: #000000;
+    text-shadow: 1px 2px 4px rgba(0, 0, 0, 0.5);
+    margin-bottom: 0.5rem;
+}
+
+.daily-record .time-value { 
+    font-size: 36px; 
+    font-weight: 500;
+    text-shadow: 1px 2px 4px rgba(0, 0, 0, 0.5);
+    color: #000000;
+}
+
+.daily-record hr { 
+    border: none; 
+    border-top: 1px solid rgba(255, 255, 255, 0.7);
+    margin: 1rem 0; 
+}
+
+.daily-record .remarks { 
+    font-family: 'Source Code Pro', monospace;
+    font-size: 16px; 
+    color: #000000;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
+    margin-top: 0.5rem;
+    text-align: left;
+    width: 100%;
+}
+
+.no-data, .loading-text { 
+    font-size: 1rem; 
+    color: #333; 
+    font-weight: 500;
+}
+
+/* Add this new rule for the fixed-width month container */
+.date-wheels-container .month-wheel-container {
+    width: 180px;      /* Increased width slightly to be safe */
+    flex-shrink: 0;  /* Prevents the container from shrinking if space is tight */
+}
+
+/* --- REPLACED STYLES --- */
+.day-wheel .wheel-item { font-size: 50px; }
+.month-wheel .wheel-item, .year-wheel .wheel-item { font-size: 20px; }
+
+/* Generic classes for item states */
+.selected-item {
+  color: #000;
+  opacity: 1;
+  transform: scale(1);
+  font-weight: 500;
+}
+.prev-item, .next-item {
+  color: #555;
+  opacity: 0.9;
+  transform: scale(0.9);
+  font-weight: 400;
+}
+
+/* Specific overrides for font sizes */
+.day-wheel .selected-item { font-size: 75px; }
+.day-wheel .prev-item, .day-wheel .next-item { font-size: 60px; }
+
+.month-wheel .selected-item { font-size: 32px; }
+.month-wheel .prev-item, .month-wheel .next-item { font-size: 24px; }
+
+.year-wheel .selected-item { font-size: 24px; }
+.year-wheel .prev-item, .year-wheel .next-item { font-size: 22px; }
+
+.leave-record{
+    background: linear-gradient(135deg, #a7aaff, #8b8bff);
+    width: 25%;
+    margin-left: 6rem;
+    padding: 2rem;
+    border-radius: 15px;
+    min-height: 25%;
+}
+
+.leave {
+    font-family: 'Source Code Pro', monospace;
+    font-size: 18px;
+    font-weight: 500;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+/* The main visual component for the leave information */
+.leave-card {
+    background-color: #a3a6f8; /* A pleasant purple-blue color from the image */
+    color: white;
+    padding: 20px 25px;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 350px; /* Adjust this width as needed */
+    box-shadow: 0 10px 25px -5px rgba(163, 166, 248, 0.4);
+    text-align: left;
+    font-family: 'Poppins', sans-serif; /* A modern font, use what's in your project */
+}
+
+/* Styles for the "Leave" title */
+.leave-title {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 500;
+    opacity: 0.9;
+}
+
+/* Styles for the large date display */
+.leave-date {
+    margin: 8px 0;
+    font-size: 2.2rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+/* Styles for the approval status text */
+.leave-status {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 400;
+    opacity: 0.8;
+}
+
+/* Styles for the message when no leave records are found */
+.no-leave-text {
+    text-align: center;
+    color: #555;
+    font-size: 1rem;
+    padding: 20px;
+}
+
+/* --- ANIMATED BLOB STYLES (MORE VISIBLE) --- */
+
+/* This is the main container that holds and blurs the blobs */
+.blob-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: 0;
+}
+
+/* Base style for individual blobs */
+.shape-blob {
+    /* CHANGED: Increased the opacity in the gradient's rgba values */
+    background: linear-gradient(
+        235deg, 
+        rgba(225, 224, 186, 0.783),
+        rgba(186, 180, 248, 0.596),
+        rgba(69, 102, 201, 0.742)        
+    );
+    height: 180px;
+    width: 200px;
+    border-radius: 80% 60% 30% 70%;
+    animation: 
+        transform 18s ease-in-out infinite both alternate,
+        movement_one 12s ease-in-out infinite both;
+    position: absolute;
+    /* CHANGED: Reduced the blur slightly to make the shape more defined */
+    filter: blur(20px); 
+    top: 25%;
+    left: 40%;
+}
+
+/* Individual blob overrides for position, size, and animation */
+.shape-blob.one {
+    /* CHANGED: Increased opacity */
+    background: linear-gradient(
+        45deg,
+        rgba(175, 195, 255, 0.8),
+        rgba(143, 174, 255, 0.9)
+    );
+    height: 100px;
+    width: 100px;
+    top: 60%;
+    right: 0%;
+    left: auto;
+    animation: 
+        transform 10s ease-in-out infinite both alternate, 
+        movement_two 10s ease-in-out infinite both;
+}
+
+.shape-blob.two {
+    /* CHANGED: Increased opacity */
+    background: linear-gradient(
+        90deg,
+        rgba(100, 121, 226, 0.792),
+        rgba(175, 195, 255, 0.703),
+        rgba(225, 224, 186, 0.783)
+    );
+    height: 120px;
+    width: 120px;
+    top: 90%;
+    left: 60%;
+    animation: 
+        transform 15s ease-in-out infinite both alternate, 
+        movement_one 8s ease-in-out infinite both reverse;
+}
+
+.shape-blob.three {
+    /* CHANGED: Increased opacity */
+    background: linear-gradient(
+        225deg,
+        rgba(225, 224, 186, 0.783),
+        rgba(198, 175, 255, 0.71),
+        rgba(109, 150, 255, 0.694)
+    );
+    height: 150px;
+    width: 150px;
+    top: 10%;
+    left: 5%;
+    animation: 
+        transform 13s ease-in-out infinite both alternate, 
+        movement_two 15s ease-in-out infinite both;
+}
+
+/* Keyframe for changing the blob's shape (no change) */
+@keyframes transform {
+    0%, 100% { border-radius: 33% 67% 70% 30% / 30% 40% 70% 70%; } 
+    20%      { border-radius: 37% 63% 51% 49% / 37% 35% 35% 63%; } 
+    40%      { border-radius: 36% 64% 64% 36% / 64% 48% 52% 26%; } 
+    60%      { border-radius: 37% 63% 51% 49% / 30% 30% 70% 73%; } 
+    80%      { border-radius: 40% 60% 42% 58% / 51% 51% 49% 59%; } 
+}
+
+/* Keyframe for making the blob move around gently (no change) */
+@keyframes movement_one {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50%      { transform: translate(50%, 20%) rotate(10deg) scale(1.2); }
+}
+
+@keyframes movement_two {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50%      { transform: translate(-30%, -40%) rotate(-20deg) scale(1.1); }
+}
+
+.attendance-buttons {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+    width: 100%;
+}
+
+.attendance-buttons button {
+    flex: 1;
+    padding: 15px 10px;
+    font-size: 16px;
+    font-weight: 600;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.15);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Checked In Button */
+.checkin-btn {
+    background: linear-gradient(135deg, #4caf50, #81c784);
+    color: #fff;
+}
+
+/* Checked Out Button */
+.checkout-btn {
+    background: linear-gradient(135deg, #f44336, #e57373);
+    color: #fff;
+}
+
+/* Hover effect */
+.attendance-buttons button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    opacity: 0.9;
+}
+
+/* Disabled state */
+.attendance-buttons button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+
