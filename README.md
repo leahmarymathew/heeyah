@@ -118,18 +118,31 @@ Make sure you have Node.js and npm installed on your machine.
 
 ## 📂 Project Structure
 
-
 heeyah/
-├── client/              # React Frontend
+├── client/                      # React + Vite Frontend
+│   ├── public/
 │   ├── src/
-│   └── ...
-├── server/              # Express Backend
+│   │   ├── components/
+│   │   ├── pages/
+│   │   ├── services/
+│   │   ├── App.jsx
+│   │   └── main.jsx
+│   ├── .env.local
+│   ├── package.json
+│   ├── vite.config.js
+│   └── tailwind.config.js
+│
+├── server/                      # Express Backend
 │   ├── config/
 │   ├── controllers/
 │   ├── middleware/
 │   ├── routes/
+│   ├── models/
 │   ├── app.js
-│   └── index.js
+│   ├── index.js
+│   ├── .env
+│   └── package.json
+│
 └── README.md
 
 
