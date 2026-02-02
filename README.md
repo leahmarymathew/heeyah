@@ -114,9 +114,10 @@ Make sure you have Node.js and npm installed on your machine.
       ```
     - Open your browser and navigate to the URL provided (usually `http://localhost:5173`).
 
-
+---
 
 ## 📂 Project Structure
+```
 
 heeyah/
 ├── client/                      # React + Vite Frontend
@@ -144,6 +145,9 @@ heeyah/
 │   └── package.json
 │
 └── README.md
+
+```
+---
 
 
 
