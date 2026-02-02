@@ -114,7 +114,7 @@ Make sure you have Node.js and npm installed on your machine.
       ```
     - Open your browser and navigate to the URL provided (usually `http://localhost:5173`).
 
----
+
 
 ## 📂 Project Structure
 
@@ -131,8 +131,7 @@ heeyah/
 │   ├── app.js
 │   └── index.js
 └── README.md
----
 
 
 
---
+
