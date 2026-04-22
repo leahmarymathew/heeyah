@@ -19,9 +19,10 @@ The system is designed with role-based access control, providing tailored functi
 ### 👮 Warden
 - **Dashboard:** Operational view of pending requests, leave applications, and student activity.
 - **Student Management:** Register new students and manage their profiles.
-- **Room Allocation:** Assign students to specific rooms.
-- **Complaint Management:** View and update the status of student-submitted requests.
-- **Leave Approval:** Approve or reject leave applications.
+- **Room Allocation:** Assign students to specific rooms and manage room inventory.
+- **Complaint Management:** View and update the status of student-submitted maintenance requests.
+- **Leave Approval:** Approve or reject student leave applications.
+- **Attendance Overview:** Monitor daily attendance records.
 
 ### 👷 Caretaker
 - **Attendance Marking:** Manually mark student attendance.
@@ -29,9 +30,10 @@ The system is designed with role-based access control, providing tailored functi
 
 ### 🧑‍🎓 Student
 - **Dashboard:** Personalized view of room details, attendance, and request status.
-- **Request System:** Raise maintenance complaints or other requests.
-- **Leave System:** View leave history.
+- **Complaint / Request System:** Raise maintenance complaints or other requests.
+- **Leave System:** Submit and track leave applications.
 - **View Attendance:** Check personal attendance records.
+- **Lost & Found:** Report lost items and browse found items posted in the hostel.
 
 ---
 
@@ -40,19 +42,32 @@ The system is designed with role-based access control, providing tailored functi
 This project is built with a modern, scalable tech stack.
 
 - **Frontend:**
-  - **React.js:** A popular library for building user interfaces.
-  - **Vite:** A next-generation frontend tooling for fast development.
-  - **Tailwind CSS:** A utility-first CSS framework for rapid UI development.
+  - **React.js** with **React Router v6** for client-side routing and navigation.
+  - **Vite** for fast development builds and hot module replacement.
+  - **Tailwind CSS** with `@tailwindcss/forms` for rapid, utility-first UI development.
+  - **FontAwesome** and **React Icons** for iconography.
+  - **React Calendar** for date selection UIs.
+  - **Axios** for HTTP communication with the backend API.
+  - **Supabase JS Client** for direct client-side auth and real-time features.
 
 - **Backend:**
-  - **Node.js:** A JavaScript runtime for building server-side applications.
-  - **Express.js:** A minimal and flexible Node.js web application framework.
-  - **ES Modules:** Using modern JavaScript modules for cleaner code.
+  - **Node.js** runtime with **ES Modules**.
+  - **Express.js v5** as the web application framework.
+  - **Helmet** for securing HTTP headers.
+  - **CORS** configured for local development origins.
+  - **Multer** for file/image upload handling.
+  - **JSON Web Tokens (JWT)** for stateless API authentication.
+  - **UUID** for generating unique identifiers.
 
 - **Database & Authentication:**
-  - **Supabase:** An open-source Firebase alternative.
-  - **PostgreSQL:** The underlying robust and scalable SQL database.
-  - **Supabase Auth:** For secure user authentication and management.
+  - **Supabase** (open-source Firebase alternative) — hosted **PostgreSQL** database.
+  - **Supabase Auth** for secure user authentication and role management.
+  - **Supabase Service Role Key** used server-side for privileged database operations.
+
+- **Testing:**
+  - **Jest** with `jest-environment-jsdom` for both frontend and backend unit tests.
+  - **@testing-library/react** for component-level UI testing.
+  - **Babel** (`@babel/preset-env`, `@babel/preset-react`) for transpiling test files.
 
 ---
 
@@ -69,12 +84,12 @@ Make sure you have Node.js and npm installed on your machine.
 
 1.  **Clone the repository:**
     ```sh
-    git clone [https://github.com/your-username/heeyah.git](https://github.com/your-username/heeyah.git)
+    git clone https://github.com/leahmarymathew/heeyah.git
     cd heeyah
     ```
 
 2.  **Set up the Backend:**
-    - Navigate to the server directory.
+    - Navigate to the `server` directory.
       ```sh
       cd server
       ```
@@ -95,18 +110,19 @@ Make sure you have Node.js and npm installed on your machine.
     - Your backend API will be running at `http://localhost:3001`.
 
 3.  **Set up the Frontend:**
-    - Open a new terminal and navigate to the client directory.
+    - Open a new terminal and navigate to the `frontend` directory.
       ```sh
-      cd client
+      cd frontend
       ```
     - Install NPM packages.
       ```sh
       npm install
       ```
-    - Create a `.env.local` file in the `client` directory and add your public Supabase keys:
+    - Create a `.env` file in the `frontend` directory and add your public Supabase keys:
       ```env
       VITE_SUPABASE_URL=YOUR_SUPABASE_PROJECT_URL
       VITE_SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_PUBLIC_KEY
+      VITE_API_URL=http://localhost:3001
       ```
     - Start the development server.
       ```sh
@@ -120,30 +136,56 @@ Make sure you have Node.js and npm installed on your machine.
 ```
 
 heeyah/
-├── client/                      # React + Vite Frontend
+├── frontend/                        # React + Vite Frontend
 │   ├── public/
 │   ├── src/
-│   │   ├── components/
-│   │   ├── pages/
-│   │   ├── services/
+│   │   ├── components/              # Shared UI components (Navbar, Header, Layout, etc.)
+│   │   ├── context/                 # React Context (AuthContext)
+│   │   ├── pages/                   # Page-level components
+│   │   │   ├── student/             #   Student-specific pages (Attendance, Leave, LostFound)
+│   │   │   ├── warden/              #   Warden-specific pages (Attendance, Complaints, Leave)
+│   │   │   ├── Dashboard.jsx
+│   │   │   ├── wardenDashboard.jsx
+│   │   │   ├── Complaint.jsx
+│   │   │   ├── LostAndFound.jsx
+│   │   │   ├── roomAllocation.jsx
+│   │   │   └── login.jsx
 │   │   ├── App.jsx
-│   │   └── main.jsx
-│   ├── .env.local
+│   │   ├── main.jsx
+│   │   └── supabase.js              # Supabase client initialisation
+│   ├── .env
 │   ├── package.json
 │   ├── vite.config.js
 │   └── tailwind.config.js
 │
-├── server/                      # Express Backend
+├── server/                          # Node.js + Express Backend
 │   ├── config/
-│   ├── controllers/
+│   │   └── supabaseClient.js        # Supabase admin client
+│   ├── controllers/                 # Business logic (auth, student, warden, room, etc.)
 │   ├── middleware/
-│   ├── routes/
-│   ├── models/
-│   ├── app.js
-│   ├── index.js
+│   │   ├── authMiddleware.js        # JWT verification middleware
+│   │   └── simpleAuth.js
+│   ├── routes/                      # Express route definitions
+│   │   ├── authRoutes.js
+│   │   ├── studentRoutes.js
+│   │   ├── wardenRoutes.js
+│   │   ├── caretakerRoutes.js
+│   │   ├── roomRoutes.js
+│   │   ├── roomAllocRoutes.js
+│   │   ├── hostelRoutes.js
+│   │   ├── attendanceRoutes.js
+│   │   ├── leaveRoutes.js
+│   │   ├── requestRoutes.js
+│   │   ├── lostAndFoundRoutes.js
+│   │   └── reportsRoutes.js
+│   ├── app.js                       # Express app setup & middleware
+│   ├── index.js                     # Server entry point
+│   ├── db.js                        # Database helpers
 │   ├── .env
 │   └── package.json
 │
+├── jest.config.js                   # Root Jest configuration
+├── quick-test.js                    # Quick smoke-test script
 └── README.md
 
 ```
